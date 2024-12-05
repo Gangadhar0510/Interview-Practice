@@ -7,6 +7,168 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.css" rel="stylesheet">
     <style>
+        .timeline {
+            position: relative;
+            padding: 20px;
+            border-left: 3px solid #007bff;
+            margin-top: 20px;
+        }
+        .timeline-item {
+            margin-bottom: 20px;
+            padding-left: 20px;
+            position: relative;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -11px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background-color: #007bff;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .timeline-date {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #007bff;
+        }
+        .timeline-content {
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Calendar Selector -->
+        <div class="mb-4">
+            <h4>Select Date to View Authorization Errors</h4>
+            <input type="text" id="date-picker" class="form-control" placeholder="Select a Date">
+        </div>
+
+        <!-- Timeline Section -->
+        <div id="timeline-container">
+            <!-- Timeline content is embedded in HTML and will be filtered by JS -->
+            <div class="timeline-item" data-date="7/19/2023 6:12:05 AM" data-type="Error" data-source="AuthExport_Realtime_CIGNA_GTM" data-authid="EVIRT002" data-code="EVIRT002" data-description="General Exception: Failure">
+                <div class="timeline-date">7/19/2023 6:12:05 AM</div>
+                <div class="timeline-content">
+                    <h5><span class="badge bg-danger">Error</span></h5>
+                    <p><strong>Source:</strong> AuthExport_Realtime_CIGNA_GTM</p>
+                    <p><strong>AuthID Received:</strong> EVIRT002</p>
+                    <p><strong>ErrorCode:</strong> EVIRT002</p>
+                    <p><strong>ErrorDescription:</strong> General Exception: Failure</p>
+                    <button class="btn btn-primary btn-sm" onclick="viewDetails(this)">View Details</button>
+                </div>
+            </div>
+            <div class="timeline-item" data-date="8/11/2023 12:47:39 PM" data-type="Error" data-source="AuthExport_Realtime_CIGNA_GTM" data-authid="EVIRT002" data-code="EVIRT002" data-description="General Exception: Failure">
+                <div class="timeline-date">8/11/2023 12:47:39 PM</div>
+                <div class="timeline-content">
+                    <h5><span class="badge bg-danger">Error</span></h5>
+                    <p><strong>Source:</strong> AuthExport_Realtime_CIGNA_GTM</p>
+                    <p><strong>AuthID Received:</strong> EVIRT002</p>
+                    <p><strong>ErrorCode:</strong> EVIRT002</p>
+                    <p><strong>ErrorDescription:</strong> General Exception: Failure</p>
+                    <button class="btn btn-primary btn-sm" onclick="viewDetails(this)">View Details</button>
+                </div>
+            </div>
+            <div class="timeline-item" data-date="8/16/2023 3:46:30 PM" data-type="Error" data-source="AuthExport_Realtime_CIGNA_GTM" data-authid="EVIRT001" data-code="EVIRT001" data-description="An error occurred while processing the request">
+                <div class="timeline-date">8/16/2023 3:46:30 PM</div>
+                <div class="timeline-content">
+                    <h5><span class="badge bg-danger">Error</span></h5>
+                    <p><strong>Source:</strong> AuthExport_Realtime_CIGNA_GTM</p>
+                    <p><strong>AuthID Received:</strong> EVIRT001</p>
+                    <p><strong>ErrorCode:</strong> EVIRT001</p>
+                    <p><strong>ErrorDescription:</strong> An error occurred while processing the request</p>
+                    <button class="btn btn-primary btn-sm" onclick="viewDetails(this)">View Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal (for error details) -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorModalLabel">Error Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Date:</strong> <span id="error-date"></span></p>
+                    <p><strong>Type:</strong> <span id="error-type"></span></p>
+                    <p><strong>Source:</strong> <span id="error-source"></span></p>
+                    <p><strong>AuthID Received:</strong> <span id="error-authid"></span></p>
+                    <p><strong>ErrorCode:</strong> <span id="error-code"></span></p>
+                    <p><strong>ErrorDescription:</strong> <span id="error-description"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize the date picker
+        flatpickr("#date-picker", {
+            dateFormat: "m/d/Y",
+            onChange: function(selectedDates, dateStr, instance) {
+                displayTimeline(dateStr);
+            }
+        });
+
+        // Function to display timeline based on selected date
+        function displayTimeline(selectedDate) {
+            // Get all timeline items
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            let visibleItems = 0;
+
+            timelineItems.forEach(item => {
+                const itemDate = item.getAttribute('data-date').split(' ')[0]; // Get only the date part
+                if (itemDate === selectedDate) {
+                    item.style.display = 'block'; // Show item
+                    visibleItems++;
+                } else {
+                    item.style.display = 'none'; // Hide item
+                }
+            });
+
+            if (visibleItems === 0) {
+                document.getElementById('timeline-container').innerHTML = '<p>No data available for the selected date.</p>';
+            }
+        }
+
+        // Function to view details in a modal
+        function viewDetails(button) {
+            const item = button.closest('.timeline-item');
+            document.getElementById('error-date').innerText = item.getAttribute('data-date');
+            document.getElementById('error-type').innerText = item.getAttribute('data-type');
+            document.getElementById('error-source').innerText = item.getAttribute('data-source');
+            document.getElementById('error-authid').innerText = item.getAttribute('data-authid');
+            document.getElementById('error-code').innerText = item.getAttribute('data-code');
+            document.getElementById('error-description').innerText = item.getAttribute('data-description');
+
+            // Show the modal
+            var myModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            myModal.show();
+        }
+    </script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Authorization with Date Selection</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.css" rel="stylesheet">
+    <style>
         /* Calendar and Timeline Styles */
         .timeline {
             position: relative;
