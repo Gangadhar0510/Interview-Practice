@@ -1,4 +1,60 @@
 
+
+document.addEventListener('DOMContentLoaded', function () {
+    const authResponses = @Html.Raw(ViewBag.AuthResponsesJson);
+
+    // Function to generate a simple calendar
+    function generateCalendar() {
+        const calendar = document.getElementById('calendar');
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+
+        // Get the first and last day of the current month
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+
+        // Populate calendar days
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+            const date = new Date(currentYear, currentMonth, day);
+            const dateString = date.toISOString().split('T')[0];
+
+            // Create a day div
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'calendar-day';
+            dayDiv.textContent = day;
+
+            // Check for matching auth responses
+            const response = authResponses.find(r => r.Date === dateString);
+            if (response) {
+                if (response.ResponseType.includes("Error")) {
+                    dayDiv.classList.add('bg-danger');
+                } else {
+                    dayDiv.classList.add('bg-success');
+                }
+            }
+
+            calendar.appendChild(dayDiv);
+        }
+    }
+
+    generateCalendar();
+
+    // Handle date selection
+    document.getElementById('date-picker').addEventListener('change', function () {
+        const selectedDate = this.value;
+        const response = authResponses.find(r => r.Date === selectedDate);
+        const errorText = document.getElementById('errorText');
+
+        if (!response) {
+            errorText.style.display = 'block';
+        } else {
+            errorText.style.display = 'none';
+        }
+    });
+});
+
+
 document.addEventListener('DOMContentLoaded', function () {
     // Retrieve the date input element and hidden response items
     const datePicker = document.getElementById('date-picker');
