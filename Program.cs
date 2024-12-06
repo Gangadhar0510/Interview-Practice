@@ -1,3 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datepicker with Month and Year Select</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <style>
+        .error-day a { background-color: red !important; color: white !important; }
+        .success-day a { background-color: green !important; color: white !important; }
+        .no-record-day a { background-color: gray !important; color: white !important; }
+        #custom-controls {
+            margin-bottom: 10px;
+        }
+        #custom-controls select {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h3>Select a Date to View Auth Response</h3>
+
+    <div id="custom-controls">
+        <!-- Dropdowns for month and year -->
+        <label for="month-select">Month:</label>
+        <select id="month-select"></select>
+
+        <label for="year-select">Year:</label>
+        <select id="year-select"></select>
+    </div>
+
+    <!-- Input for the datepicker -->
+    <input type="text" id="datepicker" />
+
+    <script>
+        $(document).ready(function() {
+            const authResponses = [
+                { date: '2024-12-01', response: 'Error' },
+                { date: '2024-12-02', response: 'Success' },
+                { date: '2024-12-05', response: 'No Record' }
+            ];
+
+            const today = new Date();
+
+            // Populate month dropdown
+            const monthSelect = $('#month-select');
+            const months = [
+                'January', 'February', 'March', 'April', 'May', 'June', 
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            months.forEach((month, index) => {
+                monthSelect.append(`<option value="${index}" ${index === today.getMonth() ? 'selected' : ''}>${month}</option>`);
+            });
+
+            // Populate year dropdown
+            const yearSelect = $('#year-select');
+            const startYear = today.getFullYear() - 10; // Start 10 years before current year
+            const endYear = today.getFullYear() + 10;  // End 10 years after current year
+            for (let year = startYear; year <= endYear; year++) {
+                yearSelect.append(`<option value="${year}" ${year === today.getFullYear() ? 'selected' : ''}>${year}</option>`);
+            }
+
+            // Initialize Datepicker
+            $('#datepicker').datepicker({
+                beforeShowDay: function(date) {
+                    const dateString = $.datepicker.formatDate('yy-mm-dd', date);
+                    let className = '';
+
+                    // Loop through authResponses and check if the date matches
+                    authResponses.forEach(item => {
+                        if (item.date === dateString) {
+                            switch (item.response) {
+                                case 'Error':
+                                    className = 'error-day';
+                                    break;
+                                case 'Success':
+                                    className = 'success-day';
+                                    break;
+                                case 'No Record':
+                                    className = 'no-record-day';
+                                    break;
+                            }
+                        }
+                    });
+
+                    return [true, className];  // Return true to enable the date, and add class for color
+                },
+                onChangeMonthYear: function(year, month) {
+                    $('#month-select').val(month - 1); // Update dropdowns when datepicker changes
+                    $('#year-select').val(year);
+                }
+            });
+
+            // Sync Datepicker with dropdowns
+            const syncDatepicker = () => {
+                const year = $('#year-select').val();
+                const month = $('#month-select').val();
+                const newDate = new Date(year, month, 1); // Set date to the 1st of the selected month and year
+                $('#datepicker').datepicker('setDate', newDate);
+                $('#datepicker').datepicker('refresh');
+            };
+
+            // Change Datepicker when month or year dropdown changes
+            $('#month-select, #year-select').on('change', syncDatepicker);
+
+            // Styling for custom classes (Error, Success, No Record)
+            $('<style>')
+                .prop('type', 'text/css')
+                .html(`
+                    .error-day a { background-color: red !important; color: white !important; }
+                    .success-day a { background-color: green !important; color: white !important; }
+                    .no-record-day a { background-color: gray !important; color: white !important; }
+                `)
+                .appendTo('head');
+
+            // Sync initial Datepicker state
+            syncDatepicker();
+        });
+    </script>
+
+</body>
+</html>
+
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">
