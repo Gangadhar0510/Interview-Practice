@@ -1,4 +1,105 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customize Datepicker Month/Year</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <style>
+        .error-day a { background-color: red !important; color: white !important; }
+        .success-day a { background-color: green !important; color: white !important; }
+        .no-record-day a { background-color: gray !important; color: white !important; }
+    </style>
+</head>
+<body>
+
+    <h3>Select a Date to View Auth Response</h3>
+
+    <!-- Input for the date picker -->
+    <input type="text" id="datepicker" />
+
+    <div>
+        <!-- Buttons to change the month/year -->
+        <button id="prevMonth">Previous Month</button>
+        <button id="nextMonth">Next Month</button>
+        <button id="setDate">Set Specific Date</button>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            const authResponses = [
+                { date: '2024-12-01', response: 'Error' },
+                { date: '2024-12-02', response: 'Success' },
+                { date: '2024-12-05', response: 'No Record' }
+            ];
+
+            // Initialize Datepicker
+            $('#datepicker').datepicker({
+                beforeShowDay: function(date) {
+                    const dateString = $.datepicker.formatDate('yy-mm-dd', date);
+                    let className = '';
+
+                    // Loop through authResponses and check if the date matches
+                    authResponses.forEach(item => {
+                        if (item.date === dateString) {
+                            switch (item.response) {
+                                case 'Error':
+                                    className = 'error-day';
+                                    break;
+                                case 'Success':
+                                    className = 'success-day';
+                                    break;
+                                case 'No Record':
+                                    className = 'no-record-day';
+                                    break;
+                            }
+                        }
+                    });
+
+                    return [true, className];  // Return true to enable the date, and add class for color
+                }
+            });
+
+            // Styling for custom classes (Error, Success, No Record)
+            $('<style>')
+                .prop('type', 'text/css')
+                .html(`
+                    .error-day a { background-color: red !important; color: white !important; }
+                    .success-day a { background-color: green !important; color: white !important; }
+                    .no-record-day a { background-color: gray !important; color: white !important; }
+                `)
+                .appendTo('head');
+
+            // Change to previous month when "Previous Month" is clicked
+            $('#prevMonth').click(function() {
+                var currentDate = $('#datepicker').datepicker('getDate');
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                $('#datepicker').datepicker('setDate', currentDate); // Set new date
+            });
+
+            // Change to next month when "Next Month" is clicked
+            $('#nextMonth').click(function() {
+                var currentDate = $('#datepicker').datepicker('getDate');
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                $('#datepicker').datepicker('setDate', currentDate); // Set new date
+            });
+
+            // Set a specific date when "Set Specific Date" is clicked
+            $('#setDate').click(function() {
+                var newDate = new Date(2024, 11, 5); // Set to December 5, 2024 (Note: months are 0-based)
+                $('#datepicker').datepicker('setDate', newDate); // Set new date
+            });
+        });
+    </script>
+
+</body>
+</html>
+
+
+
 <div class="container mt-5">
         <div class="row">
             <div class="col-md-6">
