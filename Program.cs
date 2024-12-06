@@ -1,3 +1,27 @@
+
+<div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <!-- Label and Date Input Field Side by Side -->
+                <div class="form-group row">
+                    <label for="date-picker" class="col-md-4 col-form-label mt-1">Select Date to View Auth Response</label>
+                    <div class="col-md-8">
+                        <!-- Input Group with Calendar Icon Inside -->
+                        <div class="input-group">
+                            <input type="text" class="form-control input-sm" id="date-picker" placeholder="Select a Date">
+                            <div class="input-group-append">
+                                <span class="input-group-text">
+                                    <i class="fas fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
