@@ -1,3 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Calendar with Date Color Marking</title>
+
+    <!-- jQuery and jQuery UI CSS/JS -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <style>
+        /* Custom styles for color-coding */
+        .error-day a {
+            background-color: red !important;
+            color: white !important;
+        }
+        .success-day a {
+            background-color: green !important;
+            color: white !important;
+        }
+        .no-record-day a {
+            background-color: gray !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+
+    <h3>Select Date to View Response</h3>
+    <input type="text" id="datepicker" />
+
+    <div id="responseValue" hidden>
+        <!-- This section will hold the raw data to simulate passing from the server -->
+        <script type="application/json" id="responseData">
+            [
+                { "date": "2024-12-01", "response": "Error" },
+                { "date": "2024-12-02", "response": "Success" },
+                { "date": "2024-12-05", "response": "No Record" }
+            ]
+        </script>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Parse the JSON data from the hidden div
+            const authResponses = JSON.parse($('#responseData').text());
+
+            // Initialize the datepicker
+            $('#datepicker').datepicker({
+                beforeShowDay: function(date) {
+                    const dateString = $.datepicker.formatDate('yy-mm-dd', date);
+                    let className = '';
+
+                    // Loop through authResponses and check if the date matches
+                    authResponses.forEach(item => {
+                        if (item.date === dateString) {
+                            switch (item.response) {
+                                case 'Error':
+                                    className = 'error-day';
+                                    break;
+                                case 'Success':
+                                    className = 'success-day';
+                                    break;
+                                case 'No Record':
+                                    className = 'no-record-day';
+                                    break;
+                            }
+                        }
+                    });
+
+                    // Return true to enable the date and set the class for styling
+                    return [true, className];
+                }
+            });
+
+            // Styling for custom classes (added dynamically in the header)
+            $('<style>')
+                .prop('type', 'text/css')
+                .html(`
+                    .error-day a { background-color: red !important; color: white !important; }
+                    .success-day a { background-color: green !important; color: white !important; }
+                    .no-record-day a { background-color: gray !important; color: white !important; }
+                `)
+                .appendTo('head');
+        });
+    </script>
+
+</body>
+</html>
+
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
     // Access the `authResponses` variable passed from the Razor view
