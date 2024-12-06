@@ -1,3 +1,51 @@
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Retrieve the date input element and hidden response items
+    const datePicker = document.getElementById('date-picker');
+    const authResponseItems = document.querySelectorAll('.authResponseItem');
+
+    // Create a map to store date-response types
+    const dateResponseMap = new Map();
+
+    // Populate the map with response data
+    authResponseItems.forEach(item => {
+        const date = item.getAttribute('data-date');
+        const responseType = item.getAttribute('data-type');
+
+        if (date && responseType) {
+            dateResponseMap.set(date, responseType);
+        }
+    });
+
+    // Handle calendar input change
+    datePicker.addEventListener('change', function () {
+        const selectedDate = datePicker.value;
+        const responseType = dateResponseMap.get(selectedDate);
+
+        const errorText = document.getElementById('errorText');
+
+        if (responseType) {
+            // Update the background color based on the response type
+            if (responseType.includes("Error")) {
+                datePicker.style.backgroundColor = 'red';
+            } else if (responseType.includes("Success")) {
+                datePicker.style.backgroundColor = 'green';
+            } else {
+                datePicker.style.backgroundColor = 'lightgray';
+            }
+            errorText.style.display = 'none';
+        } else {
+            // No record for the selected date
+            datePicker.style.backgroundColor = '';
+            errorText.style.display = 'block';
+        }
+    });
+});
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
