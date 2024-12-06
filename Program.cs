@@ -1,4 +1,42 @@
 
+document.addEventListener('DOMContentLoaded', () => {
+    // Access the `authResponses` variable passed from the Razor view
+    const responses = window.authResponses || [];
+
+    // Get the date picker element
+    const datePicker = document.getElementById('date-picker');
+
+    // Set colors on page load
+    responses.forEach(response => {
+        const date = new Date(response.CreatedDate);
+        const responseType = response.ResponseType;
+
+        if (responseType.includes("Error")) {
+            setDateColor(date, 'red');
+        } else if (responseType.includes("Success")) {
+            setDateColor(date, 'green');
+        } else {
+            setDateColor(date, 'gray'); // Default color for normal
+        }
+    });
+
+    // Function to set background color for specific dates
+    function setDateColor(date, color) {
+        // Format the date as 'YYYY-MM-DD'
+        const formattedDate = date.toISOString().split('T')[0];
+
+        // Check if the date matches the picker value (if the date picker shows multiple dates, customize as needed)
+        const calendarDates = document.querySelectorAll(`input[type="date"]`);
+        calendarDates.forEach(input => {
+            if (input.value === formattedDate) {
+                input.style.backgroundColor = color;
+            }
+        });
+    }
+});
+
+
+
 
 document.addEventListener('DOMContentLoaded', function () {
     const authResponses = @Html.Raw(ViewBag.AuthResponsesJson);
