@@ -1,3 +1,47 @@
+
+{
+    extend: 'excelHtml5',
+    className: 'button-BatchHistory btn-outline-success dtbuttons',
+    text: '<i class="fa fa-file-excel"></i>',
+    titleAttr: 'Export as Excel',
+    filename: `BatchHistoryData_${new Date().toISOString().split('T')[0]}`,
+    exportOptions: {
+        columns: ':visible'  // This will export only visible columns
+    },
+    action: function (e, dt, button, config) {
+        const wb = XLSX.utils.book_new(); // Create a new workbook
+        
+        // Get the column headers dynamically from the table
+        const columnHeaders = dt.columns().header().toArray().map(header => header.innerText);
+        
+        // Get the data (rows) for the visible columns
+        const rowData = dt.rows({ search: 'applied' }).data().toArray().map(row => {
+            return columnHeaders.map(col => row[col.toLowerCase().replace(/\s/g, '')]); // Map row data based on column headers
+        });
+
+        // Combine headers and rows into the final data array
+        const data = [columnHeaders, ...rowData];  // Adding headers as the first row
+        
+        // Convert the data to a sheet
+        const ws = XLSX.utils.aoa_to_sheet(data);
+
+        // Apply bold styling to the header row
+        const headerStyle = { font: { bold: true } };
+        Object.keys(ws).forEach(cell => {
+            if (cell.startsWith('A1') || cell.startsWith('B1') || cell.startsWith('C1') || cell.startsWith('D1')) {
+                ws[cell].s = headerStyle;
+            }
+        });
+
+        // Append the sheet to the workbook
+        XLSX.utils.book_append_sheet(wb, ws, 'BatchHistory');
+        
+        // Write the file
+        XLSX.writeFile(wb, `${config.filename}.xlsx`);
+    }
+}
+
+
 <!DOCTYPE html>
 <html>
 <head>
