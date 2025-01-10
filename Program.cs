@@ -1,3 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DataTable Example</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+</head>
+<body>
+    <table id="example" class="display" style="width:100%"></table>
+
+    <!-- Include JS Libraries -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            const largeDataset = [];
+            for (let i = 0; i < 50000; i++) {
+                largeDataset.push({
+                    exportProcessName: `Export_Process_${i + 1}`,
+                    batchKey: `Key_${i + 1}`,
+                    exportDate: new Date().toISOString(),
+                    count: Math.floor(Math.random() * 1000)
+                });
+            }
+
+            const columns = [
+                { data: 'exportProcessName', title: 'Export Process' },
+                { data: 'batchKey', title: 'Batch Key' },
+                { data: 'exportDate', title: 'Export Date' },
+                { data: 'count', title: 'Count' }
+            ];
+
+            $('#example').DataTable({
+                data: largeDataset,
+                columns: columns,
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fa fa-file-excel"></i> Excel',
+                        className: 'btn-sm btn-outline-success',
+                        titleAttr: 'Export to Excel',
+                        filename: `BatchHistoryData_${new Date().toISOString().split('T')[0]}`,
+                        action: function (e, dt, button, config) {
+                            const wb = XLSX.utils.book_new();
+                            const data = [
+                                columns.map(col => col.title), // Header row from column titles
+                                ...dt.rows({ search: 'applied' }).data().toArray().map(row => 
+                                    columns.map(col => row[col.data] || '') // Row data dynamically based on column titles
+                                )
+                            ];
+                            const ws = XLSX.utils.aoa_to_sheet(data);
+                            const headerStyle = { font: { bold: true } };
+                            Object.keys(ws).forEach(cell => {
+                                if (cell.startsWith('A1') || cell.startsWith('B1') || cell.startsWith('C1') || cell.startsWith('D1')) {
+                                    ws[cell].s = headerStyle;
+                                }
+                            });
+                            XLSX.utils.book_append_sheet(wb, ws, 'BatchHistory');
+                            XLSX.writeFile(wb, `${config.filename}.xlsx`);
+                        }
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: '<i class="fa fa-file-csv"></i> CSV',
+                        className: 'btn-sm btn-outline-primary',
+                        titleAttr: 'Export to CSV',
+                        filename: `BatchHistoryData_${new Date().toISOString().split('T')[0]}`,
+                        customize: function (csv) {
+                            const headerRow = columns.map(col => col.title).join(',') + '\n';
+                            return headerRow + csv;
+                        }
+                    },
+                    {
+                        extend: 'copyHtml5',
+                        text: '<i class="fa fa-copy"></i> Copy',
+                        className: 'btn-sm btn-outline-secondary',
+                        titleAttr: 'Copy Data',
+                        exportOptions: {
+                            columns: ':visible'
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
 
 $(document).ready(function () {
     // Simulate large dataset
