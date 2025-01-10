@@ -1,5 +1,55 @@
 
 {
+    extend: 'copyHtml5',
+    className: 'button-BatchHistory btn-outline-primary dtbuttons',
+    text: '<i class="fa fa-copy"></i>',
+    titleAttr: 'Copy',
+    exportOptions: {
+        columns: ':visible' // Export only visible columns
+    },
+    action: function (e, dt, button, config) {
+        // Extract headers
+        const columnHeaders = dt.columns({ search: 'applied' }).header().toArray().map(header => header.innerText);
+
+        // Extract rows data
+        const rowData = dt.rows({ search: 'applied' }).data().toArray().map(row => 
+            Object.values(row).join('\t') // Convert each row object into tab-separated values
+        );
+
+        // Combine headers and rows into the final clipboard text
+        const clipboardData = [columnHeaders.join('\t'), ...rowData].join('\n');
+
+        // Use Clipboard API to copy data
+        navigator.clipboard.writeText(clipboardData)
+            .then(() => {
+                // Show popup notification
+                const popup = document.createElement('div');
+                popup.innerText = `Copied ${rowData.length} rows to clipboard!`;
+                popup.style.position = 'fixed';
+                popup.style.bottom = '20px';
+                popup.style.right = '20px';
+                popup.style.padding = '10px 20px';
+                popup.style.backgroundColor = '#4CAF50'; // Green background
+                popup.style.color = '#fff'; // White text
+                popup.style.borderRadius = '5px';
+                popup.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                popup.style.zIndex = '9999';
+
+                document.body.appendChild(popup);
+
+                // Automatically close popup after 3 seconds
+                setTimeout(() => {
+                    popup.remove();
+                }, 3000);
+            })
+            .catch(err => {
+                console.error('Failed to copy data to clipboard', err);
+            });
+    }
+}
+
+
+{
     extend: 'excelHtml5',
     className: 'button-BatchHistory btn-outline-success dtbuttons',
     text: '<i class="fa fa-file-excel"></i>',
