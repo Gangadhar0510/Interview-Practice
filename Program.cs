@@ -1,3 +1,101 @@
+
+$(document).ready(function () {
+    // Simulate large dataset
+    const largeDataset = [];
+    for (let i = 0; i < 130000; i++) {
+        largeDataset.push({
+            exportProcessName: `Export_Process_${i + 1}`,
+            batchKey: `Key_${i + 1}`,
+            exportDate: new Date().toISOString(),
+            count: Math.floor(Math.random() * 1000)
+        });
+    }
+
+    // Initialize DataTable
+    $('#example').DataTable({
+        data: largeDataset,
+        processing: true,    // Show a processing indicator
+        deferRender: true,   // Defer rendering for better performance
+        scrollY: '60vh',     // Virtual scrolling height
+        scrollCollapse: true, // Collapse unused space
+        scroller: true,      // Enable scroller
+        pageLength: 50,      // Display 50 rows per page
+        dom: 'Bfrtip',       // Enable export buttons
+        buttons: [
+            {
+                extend: 'copyHtml5',
+                className: 'btn-sm btn-outline-primary',
+                text: '<i class="fa fa-copy"></i> Copy',
+                titleAttr: 'Copy',
+                exportOptions: {
+                    columns: ':visible'
+                },
+                action: function (e, dt, button, config) {
+                    // Custom implementation for faster copying
+                    navigator.clipboard.writeText(
+                        dt.rows({ search: 'applied' }).data().toArray().map(row =>
+                            Object.values(row).join('\t')
+                        ).join('\n')
+                    );
+                    alert('Copied to clipboard!');
+                }
+            },
+            {
+                extend: 'csvHtml5',
+                className: 'btn-sm btn-outline-success',
+                text: '<i class="fa fa-file-csv"></i> CSV',
+                titleAttr: 'Export as CSV',
+                filename: `BatchHistoryData_${new Date().toISOString().split('T')[0]}`,
+                exportOptions: {
+                    columns: ':visible'
+                },
+                action: function (e, dt, button, config) {
+                    // Custom CSV generation for large datasets
+                    const csvData = dt.rows({ search: 'applied' }).data().toArray()
+                        .map(row => Object.values(row).join(',')).join('\n');
+                    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', `${config.filename}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            },
+            {
+                extend: 'excelHtml5',
+                className: 'btn-sm btn-outline-success',
+                text: '<i class="fa fa-file-excel"></i> Excel',
+                titleAttr: 'Export as Excel',
+                filename: `BatchHistoryData_${new Date().toISOString().split('T')[0]}`,
+                exportOptions: {
+                    columns: ':visible'
+                },
+                action: function (e, dt, button, config) {
+                    // Custom Excel generation using XLSX.js
+                    const wb = XLSX.utils.book_new();
+                    const ws = XLSX.utils.json_to_sheet(dt.rows({ search: 'applied' }).data().toArray());
+                    XLSX.utils.book_append_sheet(wb, ws, 'BatchHistory');
+                    XLSX.writeFile(wb, `${config.filename}.xlsx`);
+                }
+            }
+        ],
+        columns: [
+            { data: 'exportProcessName', title: 'Export Process' },
+            { data: 'batchKey', title: 'Batch Key' },
+            { data: 'exportDate', title: 'Export Date' },
+            { data: 'count', title: 'Count' }
+        ]
+    });
+});
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
