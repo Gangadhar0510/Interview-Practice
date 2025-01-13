@@ -1,4 +1,86 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Date Range Picker</title>
+  <!-- Include CSS for Bootstrap and Daterangepicker -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    .selectbox {
+      cursor: pointer;
+      display: inline-block;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .selectbox .fa-calendar {
+      margin-right: 8px;
+    }
+
+    .selectbox .caret {
+      margin-left: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <div id="daterange" class="selectbox pull-right">
+      <i class="fa fa-calendar"></i>
+      <span>Select Date Range</span>
+      <b class="caret"></b>
+    </div>
+  </div>
+
+  <!-- Include JS for jQuery, Moment.js, and Daterangepicker -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      // Initialize the date range picker
+      $('#daterange').daterangepicker(
+        {
+          opens: 'right', // Open to the right
+          autoUpdateInput: false, // Prevent auto update of input field
+          locale: {
+            cancelLabel: 'Clear',
+            format: 'MM/DD/YYYY', // Date format
+          },
+          ranges: {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+          },
+        },
+        function (start, end) {
+          // Callback for when a date is selected
+          $('#daterange span').html(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
+        }
+      );
+
+      // Clear button functionality
+      $('#daterange').on('cancel.daterangepicker', function () {
+        $(this).find('span').html('Select Date Range');
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
 {
     extend: 'copyHtml5',
     className: 'button-BatchHistory btn-outline-primary dtbuttons',
