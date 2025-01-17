@@ -1,4 +1,17 @@
 
+worksheet.columns.forEach((col, index) => {
+        let maxLength = 0;
+        col.eachCell({ includeEmpty: true }, cell => {
+            if (cell.value) {
+                const cellLength = cell.value.toString().length;
+                maxLength = Math.max(maxLength, cellLength);
+            }
+        });
+        col.width = maxLength + 2; // Add padding for better readability
+    });
+
+
+
 worksheet.columns = columnHeaders.map((header, colIndex) => {
         const maxContentLength = Math.max(
             header.length, // Header length
