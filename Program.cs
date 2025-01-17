@@ -1,3 +1,17 @@
+
+worksheet.columns = columnHeaders.map((header, colIndex) => {
+        const maxContentLength = Math.max(
+            header.length, // Header length
+            ...rowData.map(row => row[colIndex]?.toString().length || 0) // Length of each cell in the column
+        );
+
+        return {
+            header: header,
+            key: `col${colIndex + 1}`,
+            width: maxContentLength + 2, // Add padding to width
+        };
+    });
+
 function exportToExcel(dt) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Batch History");
