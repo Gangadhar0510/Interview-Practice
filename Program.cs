@@ -1,3 +1,36 @@
+function exportToExcel(dt) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Batch History");
+
+    const columnHeaders = dt.columns().header().toArray().map(header => header.innerText);
+    const rowData = dt.rows({ search: 'applied' }).data().toArray();
+
+    worksheet.addRow(["Batch History | Exports Web Portal"]);
+    worksheet.getCell("A1").font = { bold: true, size: 16, color: { argb: "FF000000" } };
+    worksheet.getCell("A1").alignment = { horizontal: "center" };
+
+    worksheet.mergeCells(1, 1, 1, columnHeaders.length);
+
+    worksheet.addRow([]);
+    worksheet.addRow(columnHeaders).eachCell(cell => {
+        cell.font = { bold: true };
+        cell.alignment = { horizontal: "center" };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDDDDDD" } };
+    });
+
+    rowData.forEach(row => worksheet.addRow(row));
+
+    workbook.xlsx.writeBuffer().then(buffer => {
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = "BatchHistory_Export.xlsx";
+        link.click();
+    });
+}
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">
