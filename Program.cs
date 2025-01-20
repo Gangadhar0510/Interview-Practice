@@ -1,3 +1,19 @@
+<label for="exportProcessName" class="mr-2 mt-1">Export Process:</label>
+    <select class="form-control form-control-sm col-6 col-md-4 col-sm-4" 
+            name="exportProcessName" 
+            id="exportProcessName" 
+            data-toggle="tooltip" 
+            data-html="true" 
+            title="Select an Export Process">
+        <option value="All" title="Select All Processes">All</option>
+        @foreach (dynamic item in ViewBag.exportProcesses)
+        {
+            <option value="@item.Name" title="@item.Name" @(item.Name.Equals(ViewBag.exportProcessNameParam) ? "selected" : "")>
+                @item.Name
+            </option>
+        }
+    </select>
+
 
 $(document).ready(function () {
     // Initialize tooltip
