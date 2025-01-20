@@ -1,4 +1,21 @@
 
+$(document).ready(function () {
+    // Initialize tooltip
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // Update tooltip dynamically when selection changes
+    $('#exportProcessName').on('change', function () {
+        var selectedText = $(this).find('option:selected').attr('title'); // Get the title of the selected option
+        $(this).attr('title', selectedText).tooltip('dispose').tooltip(); // Update and reinitialize the tooltip
+    });
+
+    // Set initial tooltip value
+    var initialText = $('#exportProcessName').find('option:selected').attr('title');
+    $('#exportProcessName').attr('title', initialText).tooltip('dispose').tooltip();
+});
+
+
+
 #selectDates {
     display: flex;
     align-items: center;
