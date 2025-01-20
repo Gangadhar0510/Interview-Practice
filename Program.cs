@@ -1,3 +1,41 @@
+
+<div class="form-group input-group input-group-sm row">
+    <label for="exportProcessName" class="mr-2 mt-1">Export Process:</label>
+    <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle form-control form-control-sm col-6 col-md-4 col-sm-4 ml-1" type="button" id="exportProcessDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            Select Export Process
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="exportProcessDropdown">
+            <li>
+                <a class="dropdown-item ttip-opt" href="#" title="All">All</a>
+            </li>
+            @foreach (dynamic item in ViewBag.exportProcesses)
+            {
+                <li>
+                    <a class="dropdown-item ttip-opt" href="#" title="@item.Name">@item.ExportProcessDescription</a>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+<script>
+$(document).ready(function () {
+    // Initialize tooltips for dropdown items
+    $('.ttip-opt').tooltip({
+        html: true, // Enables HTML inside the tooltip
+        placement: 'right' // Adjust placement as needed
+    });
+});
+</script>
+
+<!-- Include Bootstrap and jQuery -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min
+
+
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
