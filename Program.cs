@@ -1,4 +1,16 @@
 
+
+<div id="selectDates" class="selectbox form-control pull-right form-control-sm col-4 col-md-3 col-sm-3 mr-3">
+    <i class="fa fa-calendar-alt mr-2"></i>
+    <input
+        type="text"
+        id="dateRangeText"
+        class="form-control-sm"
+        value="@ViewBag.daterangeparam"
+        placeholder="Select Date"
+        style="border: none; flex: 1; outline: none;">
+    <i class="fas fa-caret-down caret"></i>
+</div>
 worksheet.columns.forEach((col, index) => {
         let maxLength = 0;
         col.eachCell({ includeEmpty: true }, cell => {
