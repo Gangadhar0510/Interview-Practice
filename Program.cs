@@ -1,4 +1,22 @@
 
+#selectDates {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #ced4da;
+    padding: 5px;
+    width: 100%; /* Adjust width if necessary */
+    min-width: 150px; /* Prevent content overflow */
+}
+
+#dateRangeText {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-left: 5px;
+}
+
 
 <div id="selectDates" class="selectbox form-control pull-right form-control-sm col-4 col-md-3 col-sm-3 mr-3">
     <i class="fa fa-calendar-alt mr-2"></i>
