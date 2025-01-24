@@ -1,3 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auth ID Validation</title>
+  <style>
+    .is-valid {
+      border: 2px solid green;
+    }
+
+    .is-invalid {
+      border: 2px solid red;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <label for="authId">Auth ID:</label>
+    <input type="text" id="authId" placeholder="Enter Auth ID">
+  </div>
+  <script>
+    // Debounce function to reduce event frequency
+    function debounce(func, delay) {
+      let timeout;
+      return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+      };
+    }
+
+    // Add event listener to input field
+    document.getElementById("authId").addEventListener(
+      'input',
+      debounce(function () {
+        const authId = document.getElementById('authId');
+        const value = authId.value.trim();
+
+        // Validate the input
+        if (value !== "") {
+          authId.classList.remove("is-invalid");
+          authId.classList.add("is-valid");
+        } else {
+          authId.classList.remove("is-valid");
+          authId.classList.add("is-invalid");
+        }
+      }, 200) // Debounce delay of 200ms
+    );
+  </script>
+</body>
+</html>
+
+
+
 
 <div class="form-group input-group input-group-sm row">
     <label for="exportProcessName" class="mr-2 mt-1">Export Process:</label>
