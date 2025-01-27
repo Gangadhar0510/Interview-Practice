@@ -1,3 +1,148 @@
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using Microsoft.ServiceFabric.Services.Runtime;
+using Serilog;
+using Serilog.Formatting.Json;
+using System;
+using System.Collections.Generic;
+using System.Fabric;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+
+namespace YourNamespace
+{
+    internal sealed class YourService : StatelessService
+    {
+        // Lazy initialization for shared resources
+        private static readonly Lazy<X509Certificate2> _certificate = new Lazy<X509Certificate2>(GetCertificateFromStore);
+        private static readonly Lazy<ILogger> _logger = new Lazy<ILogger>(() =>
+        {
+            var seqUri = Environment.GetEnvironmentVariable("Sequri");
+            var logFileDir = Environment.GetEnvironmentVariable("LogFileDir") ?? Path.GetTempPath();
+
+            return new LoggerConfiguration()
+                .WriteTo.Console()
+                .WriteTo.File(Path.Combine(logFileDir, "log-.txt"), rollingInterval: RollingInterval.Day)
+                .WriteTo.Seq(seqUri)
+                .CreateLogger();
+        });
+
+        public YourService(StatelessServiceContext context)
+            : base(context)
+        {
+            Log.Logger = _logger.Value; // Ensure logger is initialized
+        }
+
+        protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
+        {
+            // Log instance creation for debugging
+            ServiceEventSource.Current.Message($"CreateServiceInstanceListeners invoked. InstanceId: {this.Context.InstanceId}, PartitionId: {this.Context.PartitionId}");
+
+            return new[]
+            {
+                new ServiceInstanceListener(context =>
+                    new KestrelCommunicationListener(context, "ServiceEndpoint", (url, listener) =>
+                    {
+                        var builder = WebApplication.CreateBuilder();
+
+                        // Add Serilog
+                        builder.Host.UseSerilog(Log.Logger);
+
+                        // Add services
+                        builder.Services.AddSingleton(context);
+                        builder.Services.AddControllers();
+                        builder.Services.AddEndpointsApiExplorer();
+                        builder.Services.AddSwaggerGen(c =>
+                        {
+                            c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                            {
+                                Title = "Your API Service",
+                                Version = "v1"
+                            });
+
+                            // Include XML documentation if available
+                            var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                            if (File.Exists(xmlPath))
+                            {
+                                c.IncludeXmlComments(xmlPath);
+                            }
+                        });
+
+                        // Configure Kestrel
+                        builder.WebHost
+                            .UseKestrel(options =>
+                            {
+                                var endpoint = context.CodePackageActivationContext.GetEndpoint("ServiceEndpoint");
+                                options.Listen(IPAddress.IPv6Any, endpoint.Port, listenOptions =>
+                                {
+                                    listenOptions.UseHttps(_certificate.Value);
+                                });
+                            })
+                            .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.UseUniqueServiceUrl)
+                            .UseUrls(url)
+                            .UseContentRoot(Directory.GetCurrentDirectory());
+
+                        var app = builder.Build();
+
+                        // Configure the app pipeline
+                        if (app.Environment.IsDevelopment())
+                        {
+                            app.UseDeveloperExceptionPage();
+                            app.UseSwagger();
+                            app.UseSwaggerUI(c =>
+                            {
+                                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API Service v1");
+                            });
+                        }
+
+                        app.UseHttpsRedirection();
+                        app.UseRouting();
+                        app.UseAuthorization();
+                        app.MapControllers();
+
+                        return app;
+                    }))
+            };
+        }
+
+        private static X509Certificate2 GetCertificateFromStore()
+        {
+            var thumbprint = Environment.GetEnvironmentVariable("ThumbprintId");
+            if (string.IsNullOrEmpty(thumbprint))
+            {
+                throw new InvalidOperationException("ThumbprintId environment variable is not set.");
+            }
+
+            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+            {
+                store.Open(OpenFlags.ReadOnly);
+                var certificate = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false).OfType<X509Certificate2>().FirstOrDefault();
+                store.Close();
+
+                if (certificate == null)
+                {
+                    throw new InvalidOperationException($"Certificate with thumbprint {thumbprint} not found.");
+                }
+
+                return certificate;
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
