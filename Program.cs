@@ -1,3 +1,67 @@
+
+$('#authDetailsBatchHistoryDT').on('contextmenu', 'td', function (e) {
+    e.preventDefault(); // Prevent default right-click behavior
+
+    var table = $('#authDetailsBatchHistoryDT').DataTable();
+    var rowIndex = table.cell($(this)).index().row;
+    var columns = table.columns().header().toArray();
+
+    // Find index of "Internal Authorization Id" column
+    var idColumnIndex = columns.findIndex(element => 
+        $(element).text().trim() === 'Internal Authorization Id'
+    );
+
+    if (idColumnIndex === -1) {
+        console.error("Column 'Internal Authorization Id' not found");
+        return;
+    }
+
+    var id = table.cell(rowIndex, idColumnIndex).data();
+
+    if (table.data().count() > 0) {
+        $('#authDetailsBatchHistoryDT').data('row-id', id);
+
+        var menu = $('#contextMenuBatchAuthHistory');
+        var menuWidth = menu.outerWidth();
+        var menuHeight = menu.outerHeight();
+        var arrowSize = 10; // Arrow size in pixels
+
+        // Default position
+        var posX = e.pageX;
+        var posY = e.pageY;
+
+        // Adjust position to prevent overflow
+        if (posX + menuWidth > window.innerWidth) {
+            posX = window.innerWidth - menuWidth - arrowSize;
+            menu.removeClass('arrow-left').addClass('arrow-right'); // Adjust arrow
+        } else {
+            menu.removeClass('arrow-right').addClass('arrow-left');
+        }
+
+        if (posY + menuHeight > window.innerHeight) {
+            posY = window.innerHeight - menuHeight - arrowSize;
+            menu.removeClass('arrow-top').addClass('arrow-bottom');
+        } else {
+            menu.removeClass('arrow-bottom').addClass('arrow-top');
+        }
+
+        // Set position and show menu
+        menu.css({
+            display: "block",
+            left: posX + "px",
+            top: posY + "px"
+        });
+    }
+});
+
+// Hide menu when clicking anywhere
+$(document).on('click', function () {
+    $('#contextMenuBatchAuthHistory').hide();
+});
+
+
+
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
