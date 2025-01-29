@@ -1,3 +1,61 @@
+#contextMenuBatchAuthHistory {
+    display: none;
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+/* Arrow Styles */
+#contextMenuBatchAuthHistory::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+/* Arrow pointing up */
+.arrow-top::after {
+    left: 50%;
+    top: -10px;
+    border-width: 0 10px 10px 10px;
+    border-color: transparent transparent white transparent;
+    transform: translateX(-50%);
+}
+
+/* Arrow pointing down */
+.arrow-bottom::after {
+    left: 50%;
+    bottom: -10px;
+    border-width: 10px 10px 0 10px;
+    border-color: white transparent transparent transparent;
+    transform: translateX(-50%);
+}
+
+/* Arrow pointing left */
+.arrow-left::after {
+    left: -10px;
+    top: 50%;
+    border-width: 10px 10px 10px 0;
+    border-color: transparent white transparent transparent;
+    transform: translateY(-50%);
+}
+
+/* Arrow pointing right */
+.arrow-right::after {
+    right: -10px;
+    top: 50%;
+    border-width: 10px 0 10px 10px;
+    border-color: transparent transparent transparent white;
+    transform: translateY(-50%);
+}
+
+
+
 
 $('#authDetailsBatchHistoryDT').on('contextmenu', 'td', function (e) {
     e.preventDefault(); // Prevent default right-click behavior
