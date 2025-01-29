@@ -1,3 +1,59 @@
+
+$(document).ready(function () {
+    function getScaleFactor() {
+        var body = document.body;
+        var computedStyle = window.getComputedStyle(body);
+        var transformMatrix = computedStyle.transform;
+
+        if (transformMatrix !== "none") {
+            var values = transformMatrix.split('(')[1].split(')')[0].split(',');
+            return parseFloat(values[0]); // Extract scale factor from matrix
+        }
+        return 1; // Default scale if no transformation is applied
+    }
+
+    $('#exportProcessDT').on('contextmenu', 'td', function (e) {
+        e.preventDefault();
+
+        var scaleFactor = getScaleFactor(); // Dynamically detect scale
+
+        var table = $('#exportProcessDT').DataTable();
+        var rowIndex = table.cell($(this)).index().row;
+        var columns = table.columns().header().toArray();
+
+        var idColumnIndex = columns.findIndex(function (element) {
+            return $(element).text().trim() === 'Batch Key';
+        });
+
+        if (idColumnIndex === -1) {
+            console.error("Batch Key column not found");
+            return;
+        }
+
+        var id = table.cell(rowIndex, idColumnIndex).data();
+
+        if (table.data().count() > 0) {
+            $('#exportProcessDT').data('row-id', id);
+
+            $('#contextMenuBatchHistory')
+                .css({
+                    display: "block",
+                    left: (e.pageX / scaleFactor) + "px",
+                    top: (e.pageY / scaleFactor) + "px"
+                })
+                .fadeIn(200);
+        }
+    });
+
+    // Hide the context menu when clicking elsewhere
+    $(document).click(function () {
+        $('#contextMenuBatchHistory').fadeOut(200);
+    });
+});
+
+
+
+
 #contextMenuBatchAuthHistory {
     display: none;
     position: absolute;
