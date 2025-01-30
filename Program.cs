@@ -1,4 +1,25 @@
 
+
+
+$(document).ready(function () {
+    // Select all text and search input fields, including DataTables search
+    $('input[type="text"], input[type="search"]').on('input paste', function (event) {
+        let inputField = $(this);
+
+        if (event.type === 'paste') {
+            event.preventDefault();
+            
+            // Fix: Ensure clipboardData exists before using getData
+            let clipboardData = event.originalEvent.clipboardData || window.clipboardData;
+            if (clipboardData) {
+                let text = clipboardData.getData('text');
+                inputField.val(text.replace(/\s+/g, ' ').trim());
+            }
+        } else {
+            inputField.val(inputField.val().replace(/\s+/g, ' ').trim());
+        }
+    });
+});
 $(document).ready(function () {
     // Select all text and search input fields, including DataTables search
     $('input[type="text"], input[type="search"]').on('input paste', function (event) {
