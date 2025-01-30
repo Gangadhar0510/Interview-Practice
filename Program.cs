@@ -1,4 +1,64 @@
 $(document).ready(function () {
+    $('#selectDates').daterangepicker({
+        opens: "right", // Open to the right
+        autoUpdateInput: false, // Prevent auto-filling the input field
+        showDropdowns: true, // Allow selecting years and months
+        minYear: 1880,
+        maxDate: moment(), // Restrict to the current date
+        linkedCalendars: false, // Prevents automatic end date change
+        autoApply: false, // Requires explicit selection
+        isInvalidDate: function(date) {
+            // Disable dates that are not in the same month as the selected start date
+            var startDate = $('#selectDates').data('daterangepicker').startDate;
+            return startDate && date.month() !== startDate.month();
+        },
+        locale: {
+            cancelLabel: 'Clear',
+            format: 'MM/DD/YYYY', // Date format
+            applyLabel: 'Apply',
+            fromLabel: 'From',
+            toLabel: 'To',
+            separator: ' - '
+        },
+        ranges: {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        }
+    });
+
+    // When a date range is selected
+    $('#selectDates').on('apply.daterangepicker', function (ev, picker) {
+        var startDate = picker.startDate.format('MM/DD/YYYY');
+        var endDate = picker.endDate.format('MM/DD/YYYY');
+
+        $('#dateRangeText').text(startDate + ' - ' + endDate);
+        $('#daterange').val(startDate + ' - ' + endDate);
+    });
+
+    // Clear selection on cancel
+    $('#selectDates').on('cancel.daterangepicker', function (ev, picker) {
+        $(this).val('');
+        $('#dateRangeText').text('');
+    });
+
+    // Prevent selection outside the same month when choosing a custom date range
+    $('#selectDates').on('show.daterangepicker', function(ev, picker) {
+        picker.container.find('.available').each(function() {
+            var date = moment($(this).attr('data-original-title'), 'MM/DD/YYYY');
+            if (picker.startDate && date.month() !== picker.startDate.month()) {
+                $(this).addClass('disabled'); // Disable dates from different months
+            }
+        });
+    });
+});
+
+
+
+$(document).ready(function () {
     // Select DataTables search input field
     $('div.dataTables_filter input[type="search"]').on('input paste', function (event) {
         // Prevent default paste action
