@@ -1,4 +1,20 @@
 
+document.querySelectorAll('th input').forEach(input => {
+    // Trim spaces on input event
+    input.addEventListener('input', function() {
+        this.value = this.value.replace(/\s+/g, ' ').trim();
+    });
+
+    // Trim spaces on paste event
+    input.addEventListener('paste', function(event) {
+        event.preventDefault();
+        let text = (event.clipboardData || window.clipboardData).getData('text');
+        this.value = text.replace(/\s+/g, ' ').trim();
+    });
+});
+
+
+
 $(document).ready(function () {
     function getScaleFactor() {
         var body = document.body;
