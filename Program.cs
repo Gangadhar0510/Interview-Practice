@@ -1,3 +1,19 @@
+$('#selectDates').on('cancel.daterangepicker', function (ev, picker) {
+        var last5DaysStart = moment().subtract(4, 'days');
+        var last5DaysEnd = moment();
+
+        $('#selectDates').data('daterangepicker').setStartDate(last5DaysStart);
+        $('#selectDates').data('daterangepicker').setEndDate(last5DaysEnd);
+
+        var startDate = last5DaysStart.format('MM/DD/YYYY');
+        var endDate = last5DaysEnd.format('MM/DD/YYYY');
+
+        $('#dateRangeText').text(startDate + ' - ' + endDate);
+        $('#daterange').val(startDate + ' - ' + endDate);
+    })
+
+
+
 $(document).ready(function () {
     $('#selectDates').daterangepicker({
         opens: "right", // Open to the right
