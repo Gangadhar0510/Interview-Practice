@@ -1,4 +1,22 @@
 
+$(document).ready(function () {
+    // Select all text and search input fields, including DataTables search
+    $('input[type="text"], input[type="search"]').on('input paste', function (event) {
+        let inputField = $(this);
+
+        if (event.type === 'paste') {
+            event.preventDefault();
+            let text = (event.clipboardData || window.clipboardData).getData('text');
+            inputField.val(text.replace(/\s+/g, ' ').trim());
+        } else {
+            inputField.val(inputField.val().replace(/\s+/g, ' ').trim());
+        }
+    });
+});
+
+
+
+
 document.querySelectorAll('th input').forEach(input => {
     // Trim spaces on input event
     input.addEventListener('input', function() {
