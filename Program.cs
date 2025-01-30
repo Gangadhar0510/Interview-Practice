@@ -1,4 +1,17 @@
-
+$(document).ready(function () {
+    // Select DataTables search input field
+    $('div.dataTables_filter input[type="search"]').on('input paste', function (event) {
+        // Prevent default paste action
+        if (event.type === 'paste') {
+            event.preventDefault();
+            let text = (event.clipboardData || window.clipboardData).getData('text');
+            $(this).val(text.replace(/\s+/g, ' ').trim());
+        } else {
+            // Remove extra spaces dynamically while typing
+            $(this).val($(this).val().replace(/\s+/g, ' ').trim());
+        }
+    });
+});
 
 
 $(document).ready(function () {
