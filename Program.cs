@@ -1,3 +1,9 @@
+$('#exportProcessDT thead input').on('keyup', function () {
+        var columnIndex = $(this).parent().index();
+        table.column(columnIndex).search(this.value).draw();
+    });
+
+
 [HttpPost]
 public IActionResult GetBatchHistoryData(string exportProcessName, string daterange, int draw, int start, int length, string searchValue, string sortColumn, string sortDirection)
 {
