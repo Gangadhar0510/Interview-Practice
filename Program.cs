@@ -1,3 +1,52 @@
+var table = $('#exportProcessDT').DataTable({
+    serverSide: true,
+    processing: true,
+    ajax: {
+        url: '/Insight/GetBatchHistoryData',
+        type: 'POST',
+        data: function (d) {
+            d.exportProcessName = $('#exportProcessName').val();
+            d.daterange = $('#daterange').val();
+            d.sortColumn = d.order.length > 0 ? d.columns[d.order[0].column].data : "createdDate";
+            d.sortDirection = d.order.length > 0 ? d.order[0].dir : "desc";
+            
+            // 🔹 Pass column-wise search values correctly
+            d.columns.forEach((col, index) => {
+                d.columns[index].search = { value: $('#exportProcessDT thead input').eq(index).val() || "" };
+            });
+        }
+    },
+    columns: [
+        { data: "batchKey", visible: false }, 
+        { data: "exportProcessDescription" },
+        { data: "exportProcessName" },
+        { data: "createdDate" },
+        { data: "authorizationIncluded" }
+    ],
+    order: [[3, "desc"]],
+    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+    dom: "<'row'<'col-sm-5'B><'col-sm-3'l><'col-sm-4'f>>" +
+         "<'row'<'col-sm-12'tr>>" +
+         "<'row'<'col-sm-6'i><'col-sm-6'p>>",
+});
+
+// 🔹 Add Column-Wise Search with Debounce
+$('#exportProcessDT thead input').on('keyup', function () {
+    var $input = $(this);
+    clearTimeout($input.data('timeout'));
+    
+    $input.data('timeout', setTimeout(function () {
+        table.column($input.closest('th').index()).search($input.val()).draw();
+    }, 500)); // Delay of 500ms to prevent excessive calls
+});
+
+// 🔹 Reload Data on Button Click
+$('#batchHistoryButton').on('click', function (e) {
+    e.preventDefault();
+    table.ajax.reload();
+});
+
+
 // 🔹 Ensure sortColumn is mapped correctly
 if (!string.IsNullOrEmpty(sortColumn) && columnMap.ContainsKey(sortColumn))
 {
