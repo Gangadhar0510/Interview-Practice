@@ -1,3 +1,38 @@
+
+public class DataTableRequestModel
+{
+    public int draw { get; set; } // Unique request ID
+    public int start { get; set; } // Paging start index
+    public int length { get; set; } // Number of records per page
+    public List<DataTableColumn> columns { get; set; } // Column definitions
+    public List<DataTableOrder> order { get; set; } // Sorting information
+    public DataTableSearch search { get; set; } // Global search
+    public string exportProcessName { get; set; } // Custom parameter
+    public DateTime startDate { get; set; } // Custom parameter
+    public DateTime endDate { get; set; } // Custom parameter
+}
+
+public class DataTableColumn
+{
+    public string data { get; set; } // Column name
+    public string name { get; set; } // Column alias
+    public bool searchable { get; set; } // Can be searched
+    public bool orderable { get; set; } // Can be sorted
+    public DataTableSearch search { get; set; } // Search data
+}
+
+public class DataTableOrder
+{
+    public int column { get; set; } // Column index
+    public string dir { get; set; } // Sort direction (asc/desc)
+}
+
+public class DataTableSearch
+{
+    public string value { get; set; } // Search value
+    public bool regex { get; set; } // Regex search
+}
+
 [HttpPost]
 public IActionResult GetBatchHistoryData([FromBody] DataTableRequestModel request)
 {
