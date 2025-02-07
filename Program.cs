@@ -1,3 +1,45 @@
+
+-- Step 1: Create and Populate Temporary Table Instead of CTE
+SELECT *
+INTO #TempExportProcess
+FROM Exports.Canonical.ExportProcess EP (NOLOCK)
+WHERE (@exportProcessName = 'All' OR EP.[Name] = @exportProcessName)
+  AND (EP.[Name] LIKE '%Batch%' OR EP.[Name] LIKE 'Manual%');
+
+-- Step 2: Create an Index on the Temporary Table
+CREATE CLUSTERED INDEX IDX_TempExportProcess ON #TempExportProcess (ExportProcessKey);
+
+-- Step 3: Optimized Main Query
+SELECT 
+    EB.CreatedDate,
+    EP.[Name],
+    EB.ExportBatchKey,
+    COUNT(EB_AI.AuthorizationInstanceKey) AS AuthCount,
+    CASE 
+        WHEN EP.ExportProcessDescription IS NULL OR EP.ExportProcessDescription = '' 
+        THEN EP.[Name]
+        ELSE EP.ExportProcessDescription
+    END AS ExportProcessDescription
+FROM Exports.EDI.ExportBatch EB (NOLOCK)
+INNER JOIN #TempExportProcess EP (NOLOCK)
+    ON EP.ExportProcessKey = EB.ExportProcessKey
+INNER JOIN Exports.Canonical.AuthorizationDestination AD (NOLOCK)
+    ON AD.AuthorizationKey = EB_AI.AuthorizationInstanceKey
+INNER JOIN Exports.Canonical.AuthorizationDestinationStatus ADS (NOLOCK)
+    ON ADS.AuthorizationDestinationStatusKey = AD.AuthorizationDestinationStatusKey
+WHERE EB.CreatedDate >= @startDate 
+  AND EB.CreatedDate < @endDate + 1 -- Avoids function call in WHERE clause
+GROUP BY 
+    EB.CreatedDate, 
+    EB.ExportBatchKey, 
+    EP.[Name], 
+    EP.ExportProcessDescription
+ORDER BY 
+    EB.CreatedDate DESC;
+
+-- Step 4: Drop Temporary Table
+DROP TABLE #TempExportProcess;
+
 -- Materialize the CTE into a temporary table for better performance
 SELECT 
     EP.ExportProcessKey,
