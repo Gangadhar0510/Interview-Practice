@@ -1,3 +1,52 @@
+[HttpPost]
+public IActionResult GetBatchHistoryData([FromForm] DataTableRequest request)
+{
+    DateTime startDate;
+    DateTime endDate;
+
+    if (string.IsNullOrEmpty(request.daterange))
+    {
+        DateTime currentDate = DateTime.Now;
+        startDate = currentDate.AddDays(-4);
+        endDate = currentDate;
+    }
+    else
+    {
+        string[] dateValues = request.daterange.Split('-').Select(s => s.Trim()).ToArray();
+        startDate = DateTime.ParseExact(dateValues[0], "MM/dd/yyyy", CultureInfo.InvariantCulture);
+        endDate = DateTime.ParseExact(dateValues[1], "MM/dd/yyyy", CultureInfo.InvariantCulture);
+    }
+
+    var query = _batchHistory.GetBatchHistoryData(request.exportProcessName, startDate.Date, endDate.Date)
+        .AsQueryable();
+
+    int totalRecords = query.Count();
+
+    var data = query
+        .Skip(request.start)
+        .Take(request.length)
+        .Select(b => new
+        {
+            BatchKey = b.ExportBatchKey,
+            ExportProcessDescription = b.ExportProcessDescription,
+            ExportProcessName = b.Name,
+            Date = b.CreatedDate.ToString("yyyy-MM-dd hh:mm:ss tt"), // Formatting Date
+            AuthorizationIncluded = b.AuthCount
+        })
+        .ToList();
+
+    return Json(new
+    {
+        draw = request.draw,
+        recordsTotal = totalRecords,
+        recordsFiltered = totalRecords,
+        data = data
+    });
+}
+
+
+
+
 public class DataTableRequest
 {
     public int draw { get; set; }
