@@ -1,4 +1,102 @@
 [HttpPost]
+public IActionResult GetBatchHistoryData(string exportProcessName, string daterange, int draw, int start, int length, string searchValue, string sortColumn, string sortDirection)
+{
+    DateTime startDate, endDate;
+
+    if (string.IsNullOrEmpty(daterange))
+    {
+        DateTime currentDate = DateTime.Now;
+        startDate = currentDate.AddDays(-4);
+        endDate = currentDate;
+    }
+    else
+    {
+        string[] dateValues = daterange.Split('-').Select(s => s.Trim()).ToArray();
+        startDate = Convert.ToDateTime(dateValues[0]);
+        endDate = Convert.ToDateTime(dateValues[1]);
+    }
+
+    var query = _batchHistory.GetBatchHistoryData(exportProcessName, startDate, endDate);
+
+    // 🔹 Apply Search Filter
+    if (!string.IsNullOrEmpty(searchValue))
+    {
+        query = query.Where(x =>
+            x.Name.Contains(searchValue) ||
+            x.ExportProcessDescription.Contains(searchValue) ||
+            x.AuthCount.ToString().Contains(searchValue)
+        );
+    }
+
+    // 🔹 Apply Sorting
+    if (!string.IsNullOrEmpty(sortColumn) && !string.IsNullOrEmpty(sortDirection))
+    {
+        query = sortDirection.ToLower() == "asc"
+            ? query.OrderBy(x => EF.Property<object>(x, sortColumn))
+            : query.OrderByDescending(x => EF.Property<object>(x, sortColumn));
+    }
+
+    int totalRecords = query.Count();  // ✅ Total before pagination
+
+    var batchCounts = query
+        .Skip(start)
+        .Take(length)
+        .Select(batch => new
+        {
+            BatchKey = batch.ExportBatchKey.ToString(),
+            ExportProcessDescription = batch.ExportProcessDescription,
+            ExportProcessName = batch.Name,
+            Date = batch.CreatedDate.ToString("yyyy-MM-dd"),
+            AuthorizationIncluded = batch.AuthCount
+        })
+        .ToList();
+
+    return Json(new
+    {
+        draw = draw,
+        recordsTotal = totalRecords,
+        recordsFiltered = totalRecords,
+        data = batchCounts
+    });
+}
+
+
+$(document).ready(function () {
+    var table = $('#exportProcessDT').DataTable({
+        processing: true,
+        serverSide: true,
+        searching: true,
+        ordering: true,
+        paging: true,
+        ajax: {
+            url: '/Insight/GetBatchHistoryData',
+            type: 'POST',
+            data: function (d) {
+                d.exportProcessName = $('#exportProcessName').val();
+                d.daterange = $('#daterange').val();
+                d.searchValue = d.search.value;  // 🔹 Pass search text
+                d.sortColumn = d.order.length > 0 ? d.columns[d.order[0].column].data : "Date";
+                d.sortDirection = d.order.length > 0 ? d.order[0].dir : "desc";
+            }
+        },
+        columns: [
+            { data: "BatchKey", visible: false, defaultContent: "" },
+            { data: "ExportProcessDescription", defaultContent: "" },
+            { data: "ExportProcessName", defaultContent: "" },
+            { data: "Date", defaultContent: "" },
+            { data: "AuthorizationIncluded", defaultContent: "0" }
+        ]
+    });
+
+    $('#batchHistoryButton').click(function (e) {
+        e.preventDefault();
+        table.ajax.reload(); // 🔹 Refresh data without full reload
+    });
+});
+
+
+
+[HttpPost]
 public IActionResult GetBatchHistoryData([FromForm] DataTableRequest request)
 {
     DateTime startDate;
