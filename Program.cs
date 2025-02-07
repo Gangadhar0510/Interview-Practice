@@ -1,3 +1,28 @@
+[HttpPost]
+public IActionResult GetBatchHistoryData([FromBody] DataTableRequestModel request)
+{
+    IQueryable<BatchHistoryDataModel> query = _batchHistory.GetBatchHistoryData(request.exportProcessName, request.startDate, request.endDate);
+
+    // Apply column-wise search filters
+    if (!string.IsNullOrEmpty(request.columns[1].search.value))
+        query = query.Where(x => x.ExportProcessDescription.Contains(request.columns[1].search.value));
+    
+    if (!string.IsNullOrEmpty(request.columns[2].search.value))
+        query = query.Where(x => x.ExportProcessName.Contains(request.columns[2].search.value));
+
+    if (!string.IsNullOrEmpty(request.columns[3].search.value))
+        query = query.Where(x => x.CreatedDate.ToString().Contains(request.columns[3].search.value));
+
+    if (!string.IsNullOrEmpty(request.columns[4].search.value))
+        query = query.Where(x => x.AuthorizationIncluded.ToString().Contains(request.columns[4].search.value));
+
+    int totalRecords = query.Count();
+    var batchHistory = query.Skip(request.start).Take(request.length).ToList();
+
+    return Json(new { draw = request.draw, recordsTotal = totalRecords, recordsFiltered = totalRecords, data = batchHistory });
+}
+
+
 $(document).ready(function () {
     var table = $('#exportProcessDT').DataTable({
         processing: true,
