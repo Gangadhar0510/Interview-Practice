@@ -1,3 +1,13 @@
+public class DataTableRequest
+{
+    public int draw { get; set; }
+    public int start { get; set; }
+    public int length { get; set; }
+    public string exportProcessName { get; set; }
+    public string daterange { get; set; }
+}
+
+
 
 public IActionResult EdiBatchHistory(string daterange,string exportProcessName = "All")
         {
