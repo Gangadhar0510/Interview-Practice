@@ -1,3 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimized DataTable</title>
+
+    <!-- Include jQuery and DataTables -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/scroller/2.0.7/js/dataTables.scroller.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"></script>
+    <script src="https://cdn.datatables.net/scroller/2.0.7/css/scroller.dataTables.min.css"></script>
+
+    <!-- Include Moment.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+
+    <style>
+        /* Optimize table performance */
+        table.dataTable thead th {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+    <table id="exportProcessDT" class="display nowrap" style="width:100%">
+        <thead>
+            <tr>
+                <th>Batch Key</th>
+                <th>Export Process Description</th>
+                <th>Export Process Name</th>
+                <th>Count</th>
+                <th>Static Value</th>
+                <th>Export Date</th>
+           
+
+
+
+
+
 $('#selectDates').on('cancel.daterangepicker', function (ev, picker) {
         var last5DaysStart = moment().subtract(4, 'days');
         var last5DaysEnd = moment();
