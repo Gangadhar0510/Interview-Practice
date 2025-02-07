@@ -1,3 +1,77 @@
+[HttpPost]
+public IActionResult GetBatchHistoryData(string exportProcessName, string daterange, int draw, int start, int length, string searchValue, string sortColumn, string sortDirection)
+{
+    DateTime startDate, endDate;
+
+    if (string.IsNullOrEmpty(daterange))
+    {
+        DateTime currentDate = DateTime.Now;
+        startDate = currentDate.AddDays(-4);
+        endDate = currentDate;
+    }
+    else
+    {
+        string[] dateValues = daterange.Split('-').Select(s => s.Trim()).ToArray();
+        startDate = Convert.ToDateTime(dateValues[0]);
+        endDate = Convert.ToDateTime(dateValues[1]);
+    }
+
+    var query = _batchHistory.GetBatchHistoryData(exportProcessName, startDate, endDate).AsQueryable();
+
+    // 🔹 Apply Search Filter
+    if (!string.IsNullOrEmpty(searchValue))
+    {
+        query = query.Where(x =>
+            x.Name.Contains(searchValue) ||
+            x.ExportProcessDescription.Contains(searchValue) ||
+            x.AuthCount.ToString().Contains(searchValue)
+        );
+    }
+
+    // 🔹 Convert lowercase JS sortColumn to C# property names
+    Dictionary<string, string> columnMap = new Dictionary<string, string>
+    {
+        { "batchKey", "ExportBatchKey" },
+        { "exportProcessDescription", "ExportProcessDescription" },
+        { "exportProcessName", "Name" },
+        { "createdDate", "CreatedDate" }, // 🔹 Ensure correct mapping
+        { "authorizationIncluded", "AuthCount" }
+    };
+
+    // 🔹 Ensure sortColumn is mapped correctly
+    if (!string.IsNullOrEmpty(sortColumn) && columnMap.ContainsKey(sortColumn))
+    {
+        sortColumn = columnMap[sortColumn];
+
+        query = sortDirection.ToLower() == "asc"
+            ? query.OrderBy(x => EF.Property<object>(x, sortColumn))
+            : query.OrderByDescending(x => EF.Property<object>(x, sortColumn));
+    }
+
+    int totalRecords = query.Count();
+
+    var batchCounts = query
+        .Skip(start)
+        .Take(length)
+        .Select(batch => new
+        {
+            batchKey = batch.ExportBatchKey.ToString(),
+            exportProcessDescription = batch.ExportProcessDescription,
+            exportProcessName = batch.Name,
+            createdDate = batch.CreatedDate, // 🔹 Ensure correct mapping
+            authorizationIncluded = batch.AuthCount
+        })
+        .ToList();
+
+    return Json(new
+    {
+        draw = draw,
+        recordsTotal = totalRecords,
+        recordsFiltered = totalRecords,
+        data = batchCounts
+    });
+}
+
 
 public class DataTableRequestModel
 {
