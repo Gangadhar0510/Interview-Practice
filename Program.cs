@@ -1,3 +1,21 @@
+// 🔹 Ensure sortColumn is mapped correctly
+if (!string.IsNullOrEmpty(sortColumn) && columnMap.ContainsKey(sortColumn))
+{
+    sortColumn = columnMap[sortColumn];
+
+    var parameter = Expression.Parameter(typeof(BatchHistoryDataModel), "x");
+    var property = Expression.Property(parameter, sortColumn);
+    var lambda = Expression.Lambda(property, parameter);
+
+    var methodName = sortDirection.ToLower() == "asc" ? "OrderBy" : "OrderByDescending";
+    var orderByMethod = typeof(Queryable).GetMethods()
+        .Where(m => m.Name == methodName && m.GetParameters().Length == 2)
+        .Single()
+        .MakeGenericMethod(typeof(BatchHistoryDataModel), property.Type);
+
+    query = (IQueryable<BatchHistoryDataModel>)orderByMethod.Invoke(null, new object[] { query, lambda });
+}
+
 [HttpPost]
 public IActionResult GetBatchHistoryData(string exportProcessName, string daterange, int draw, int start, int length, string searchValue, string sortColumn, string sortDirection)
 {
