@@ -1,3 +1,49 @@
+-- Step 1: Pre-Aggregate Authorization Counts
+SELECT 
+    AuthorizationKey, 
+    COUNT(*) AS AuthCount
+INTO #TempAuthCounts
+FROM Exports.Canonical.AuthorizationDestination (NOLOCK)
+GROUP BY AuthorizationKey;
+
+-- Step 2: Create an Index on the Temporary Table
+CREATE CLUSTERED INDEX IDX_TempAuthCounts ON #TempAuthCounts (AuthorizationKey);
+
+-- Step 3: Create and Populate Temporary Table Instead of CTE
+SELECT *
+INTO #TempExportProcess
+FROM Exports.Canonical.ExportProcess EP (NOLOCK)
+WHERE (@exportProcessName = 'All' OR EP.[Name] = @exportProcessName)
+  AND (EP.[Name] LIKE '%Batch%' OR EP.[Name] LIKE 'Manual%');
+
+-- Step 4: Create an Index on the Temporary Table
+CREATE CLUSTERED INDEX IDX_TempExportProcess ON #TempExportProcess (ExportProcessKey);
+
+-- Step 5: Optimized Main Query with Pre-Aggregation and Indexing
+SELECT 
+    EB.CreatedDate,
+    EP.[Name],
+    EB.ExportBatchKey,
+    COALESCE(TAC.AuthCount, 0) AS AuthCount, -- Using Pre-Aggregated Data
+    CASE 
+        WHEN EP.ExportProcessDescription IS NULL OR EP.ExportProcessDescription = '' 
+        THEN EP.[Name]
+        ELSE EP.ExportProcessDescription
+    END AS ExportProcessDescription
+FROM Exports.EDI.ExportBatch EB WITH (INDEX = IDX_ExportBatch_CreatedDate) -- Force Index for Faster Lookup
+INNER JOIN #TempExportProcess EP (NOLOCK)
+    ON EP.ExportProcessKey = EB.ExportProcessKey
+LEFT JOIN #TempAuthCounts TAC (NOLOCK) -- Use Pre-Aggregated Table
+    ON TAC.AuthorizationKey = EB.ExportProcessKey
+WHERE EB.CreatedDate >= @startDate 
+  AND EB.CreatedDate < @endDate + 1 -- Avoids function call in WHERE clause
+ORDER BY 
+    EB.CreatedDate DESC;
+
+-- Step 6: Drop Temporary Tables After Query Execution
+DROP TABLE #TempExportProcess;
+DROP TABLE #TempAuthCounts;
+
 
 -- Step 1: Create and Populate Temporary Table Instead of CTE
 SELECT *
