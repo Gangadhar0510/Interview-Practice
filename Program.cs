@@ -1,3 +1,45 @@
+-- Materialize the CTE into a temporary table for better performance
+SELECT 
+    EP.ExportProcessKey,
+    EP.[Name],
+    EP.ExportProcessDescription
+INTO #Temp_ExportProcess
+FROM Exports.Canonical.ExportProcess EP (NOLOCK)
+WHERE (@exportProcessName = 'All' OR EP.[Name] = @exportProcessName)
+  AND (EP.[Name] LIKE '%Batch%' OR EP.[Name] LIKE 'Manual%');
+
+-- Main query
+SELECT 
+    EB.CreatedDate,
+    EP.[Name],
+    EB.ExportBatchKey,
+    COUNT(EB_AI.AuthorizationInstanceKey) AS 'AuthCount',
+    CASE 
+        WHEN EP.ExportProcessDescription IS NULL OR EP.ExportProcessDescription = '' 
+        THEN EP.[Name]
+        ELSE EP.ExportProcessDescription
+    END AS ExportProcessDescription
+FROM Exports.EDI.ExportBatch EB (NOLOCK)
+INNER JOIN #Temp_ExportProcess EP
+    ON EP.ExportProcessKey = EB.ExportProcessKey
+INNER JOIN Exports.Canonical.AuthorizationDestination AD (NOLOCK)
+    ON AD.AuthorizationKey = EB_AI.AuthorizationInstanceKey
+INNER JOIN Exports.Canonical.AuthorizationDestinationStatus ADS (NOLOCK)
+    ON ADS.AuthorizationDestinationStatusKey = AD.AuthorizationDestinationStatusKey
+WHERE EB.CreatedDate >= @startDate 
+  AND EB.CreatedDate < DATEADD(day, 1, @endDate)
+GROUP BY 
+    EB.CreatedDate, 
+    EB.ExportBatchKey, 
+    EP.[Name], 
+    EP.ExportProcessDescription
+ORDER BY 
+    EB.CreatedDate DESC;
+
+-- Clean up temporary table
+DROP TABLE #Temp_ExportProcess;
+
+
 WITH cte_ExportProcess AS (
     SELECT *
     FROM Exports.Canonical.ExportProcess EP (NOLOCK)
