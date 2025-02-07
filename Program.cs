@@ -1,3 +1,478 @@
+<script>
+    var dataFromServer = @Html.Raw(Json.Serialize(Model));
+
+</script>
+<div class="card">
+    <ol class="breadcrumb">
+        <li id="breadcrumb-main" class="breadcrumb-item">Insight</li>
+        <li id="breadcrumb-current" class="breadcrumb-item active">Batch History</li> &nbsp;
+        <li class="fas fa-info-circle text-primary breadcrumb tooltipicon pb-2" data-toggle="tooltipBatchHistory" data-custom-class="custom-tooltip" tabindex="0" data-html="true" data-placement="auto" title="@toolTipMsg"></li>
+    </ol>
+    <section class="content">
+        <div class="card-body" style="margin-top:-8px">            
+                <div id="mainBatchHistory">
+                    <form asp-controller="Insight" asp-action="EdiBatchHistory">
+                        <div class="form-group input-group input-group-sm row ml-1">
+                            <label for="exportProcessName" class="mr-2 mt-1">Export Process:</label>
+                            <select class="form-control form-control-sm  col-md-3 col-sm-3 col-xl-3 col-lg-3 col-xs-3 ml-1" name="exportProcessName" id="exportProcessName">
+                                <Option>All</Option>
+                                @foreach (dynamic item in ViewBag.exportProcesses)
+                                {
+                                    if (item.Name.Equals(ViewBag.exportProcessNameParam))
+                                    {
+                                        <option value="@item.Name" title="@item.Name" selected="selected">@item.ExportProcessDescription</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@item.Name" title="@item.Name">@item.ExportProcessDescription</option>
+                                    }
+                                }
+                            </select>
+                            &nbsp;&nbsp;
+                            <label for="daterange" class="mr-2 mt-1">Date Range:</label>
+                            <div id="selectDates" title="@ViewBag.daterangeparam" data-toggle="tooltipBatchHistory" tabindex="0" data-html="true" data-placement="auto"
+                                 class="selectbox form-control pull-right form-control-sm col-md-2 col-sm-2 col-xl-2 col-lg-2 col-xs-2 mr-3">
+                                <i class="fa fa-calendar-alt mr-1"></i>
+                                <span id="dateRangeText"></span>
+                                <i class="fas fa-caret-down caret mb-1"></i>
+                            </div>
+                            <input type="hidden" id="daterange" name="daterange" value="@ViewBag.daterangeparam">
+
+                            <button id="batchHistoryButton" class="btn btn-info searchButton form-control-sm" type="submit">Search</button>
+
+                        </div>
+                    </form>
+                    <table id="exportProcessDT" class="table nowrap display table-striped table-panel table-bordered table-hover table-sm" width="100%" style="width:100%" cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th hidden><input name="BatchKey" type="text" class="form-control form-control-sm" placeholder="Batch Key" data-index="0" autocomplete="off" /></th>
+                                <th><input autocomplete="off" name="ExportProcessDescription" type="text" class="form-control form-control-sm" placeholder="Export Process Description" data-index="1" /></th>
+                                <th><input autocomplete="off" name="ExportProcessName" type="text" class="form-control form-control-sm" placeholder="Export Process Name" data-index="2" /></th>
+                                <th><input autocomplete="off" name="Date" class="form-control form-control-sm" type="text" placeholder="Date" data-index="3" /></th>
+                                <th><input autocomplete="off" name="AuthorizationIncluded" class="form-control form-control-sm" type="text" placeholder="Authorization Included" data-index="4" /></th>
+                            </tr>
+                            <tr class="serp-row-header bg-navy color-palette">
+                                <th hidden>Batch Key</th>
+                                <th>Export Process Description</th>
+                                <th>Export Process Name</th>
+                                <th>Created Date</th>
+                                <th>Authorization Included</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                <div id="ViewAuthorizationDetails" style="display:none; width:100%"></div>
+                <div id="authHistorySection" style="display:none; width:100%"></div>
+                <div id="CompareTool" style="display:none; width:100%" class="ml-2"></div>
+                <div id="spinner" class="text-center text-primary" style="display:none">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                    <span>Loading...</span>
+                </div>
+            </div>        
+    </section>
+</div>
+<div id="contextMenuBatchHistory" class="dropdown-menu" style="display:none;">
+    <a id="authInfo" class="dropdown-item" href="javascript:void(0)"><i style="color:mediumpurple" class="fa-solid fa-key mr-1"></i>View AuthID Info</a>
+</div>
+<div id="contextMenuBatchAuthHistory" class="dropdown-menu" style="display:none;">
+    <a id="authhistory" class="dropdown-item" href="javascript:void(0)"><i class="fas fa-landmark nav-icon mr-1" style="color:lightskyblue"></i>Auth History</a>
+    <a id="CompareExport" class="dropdown-item" href="javascript:void(0)"><i class="fas fa-code-compare nav-icon mr-1" style="color:#FC2847"></i>Compare Tool</a>
+</div>
+
+
+$(document).ready(function ()
+{
+    const date = moment().format('MM-DD-yyyy HH:MM:ss');
+
+    $('[data-toggle="tooltipBatchHistory').tooltip({
+        trigger: 'hover'
+    });
+
+    $(document).on('input paste', 'input[type="text"], input[type="search"]', function (event) {
+        let inputField = $(this);
+        if (event.type === 'paste') {
+            event.preventDefault();
+
+            // Fix: Ensure clipboardData exists before using getData
+            let clipboardData = event.originalEvent.clipboardData || window.clipboardData;
+            if (clipboardData) {
+                let text = clipboardData.getData('text');
+                inputField.val(text.replace(/\s+/g, ' ').trim());
+            }
+        } else {
+            inputField.val(inputField.val().replace(/\s+/g, ' ').trim());
+        }
+    });
+   
+    //Context menu start 
+    $('#exportProcessDT').on('contextmenu', 'td', function (e) {
+        e.preventDefault();
+        var table = $('#exportProcessDT').DataTable();
+        var rowIndex = table.cell($(this)).index().row;
+        var columns = table.columns().header().toArray();
+        var idColumnIndex = columns.findIndex(function (element) {
+            return $(element).text().trim() === 'Batch Key';
+        });
+        var id = table.cell(rowIndex, idColumnIndex).data();
+        
+        if (table.data().count() > 0) {
+
+            $('#exportProcessDT').data('row-id', id);
+            $('#contextMenuBatchHistory').css({
+                display: "block",
+                left: e.pageX,
+                top: e.pageY
+            });
+        }
+
+    });
+
+    $(document).on('click', function () {
+        $('#contextMenuBatchHistory').hide();
+    });
+
+    $('#authInfo').off('click').on('click', function ()
+    {
+         
+        var batchKey = $('#exportProcessDT').data('row-id');
+
+        var msg = "Click here navigate back to the Batch History page";
+        $('#breadcrumb-main').html(`<a href="javascript:void(0)" id="backToMain"  data-bs-toggle="tooltip" title="${msg}"><i class="fas fa-reply"></i> Batch History</a>`);
+        $('#breadcrumb-current').text('Batch History Auth Details');
+
+        var backtomain = document.getElementById('backToMain');
+        var tooltipEle = new bootstrap.Tooltip(backtomain, {
+            placement: 'right',
+            trigger: 'hover'
+        });
+
+        tooltipEle.show();
+        setTimeout(function () {
+            tooltipEle.hide();
+            $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+        }, 1400);
+        
+        $('#mainBatchHistory').slideUp(function ()
+        {          
+            GetAuthorizationView(batchKey);            
+        });
+
+        $(document).on('click', '#backToMain', function () {
+            $('.tooltip').remove();
+            $('#ViewAuthorizationDetails').slideUp(function () {
+                $('#breadcrumb-main').text('Insight');
+                $('#breadcrumb-current').text('Batch History');
+                $('#mainBatchHistory').slideDown(function () {
+                    $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+                });
+            });
+        });
+
+    });
+
+   
+
+    function GetAuthorizationView(batchKey) {  
+        $('#spinner').show();
+        $.ajax({
+            method: 'GET',
+            url: '/Insight/GetInternalAuthorizationIdData',
+            data: { batchkey: batchKey },
+            success: function (response) {                 
+                $('#ViewAuthorizationDetails').html(response);                           
+                setTimeout(function () {  
+                    $('#spinner').hide();
+                    $('#ViewAuthorizationDetails').slideDown();                    
+                    $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+                }, 300);          
+               
+            },
+            error: function () {
+                $('#spinner').hide();
+                alert("error");
+            }
+        });
+       
+    }
+
+    var selectedDaterange = document.getElementById('daterange').value;
+    $('#dateRangeText').text(selectedDaterange);
+    $('#selectDates').daterangepicker({
+        opens: "right", // Open to the right
+        autoUpdateInput: false, // Prevent auto-filling the input field
+        showDropdowns: true, // Allow selecting years and months
+        minYear: 1880,
+        maxDate: moment(), // Restrict to the current date
+        linkedCalendars: false, // Prevents automatic end date change
+        autoApply: false, // Requires explicit selection       
+        locale: {
+            cancelLabel: 'Clear',
+            format: 'MM/DD/YYYY', // Date format
+            applyLabel: 'Apply',
+            fromLabel: 'From',
+            toLabel: 'To',
+            separator: ' - '
+        },
+        ranges: {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        }
+    });
+
+    // When a date range is selected
+    $('#selectDates').on('apply.daterangepicker', function (ev, picker) {
+        var startDate = picker.startDate.format('MM/DD/YYYY');
+        var endDate = picker.endDate.format('MM/DD/YYYY');
+
+        $('#dateRangeText').text(startDate + ' - ' + endDate);
+        $('#daterange').val(startDate + ' - ' + endDate);
+    });
+
+    // Clear selection on cancel
+    $('#selectDates').on('cancel.daterangepicker', function (ev, picker) {
+        var last5DaysStart = moment().subtract(4, 'days');
+        var last5DaysEnd = moment();
+
+        $('#selectDates').data('daterangepicker').setStartDate(last5DaysStart);
+        $('#selectDates').data('daterangepicker').setEndDate(last5DaysEnd);
+
+        var startDate = last5DaysStart.format('MM/DD/YYYY');
+        var endDate = last5DaysEnd.format('MM/DD/YYYY');
+
+        $('#dateRangeText').text(startDate + ' - ' + endDate);
+        $('#daterange').val(startDate + ' - ' + endDate);
+    });
+
+   
+    $('[data-toggle="tooltipBatchHistory"]').tooltip({
+        placement: 'auto'
+    });
+
+    $('#exportProcessDT thead').on('keyup', 'input', function () {
+        var table = $('#exportProcessDT').DataTable();
+        table.column($(this).data('index'))
+            .search(this.value)
+            .draw();
+    });
+    let dataSet = [];
+    var len = dataFromServer.batchCounts.length;
+    dataSet = Array.from(dataFromServer.batchCounts, (item) => [
+        item.batchKey.trim(),
+        item.exportProcessDescription.trim(),
+        item.exportProcessName.trim(),
+        moment(item.exportDate).format('yyyy-MM-DD hh:mm:ss A').trim(),
+        item.count,
+    ]);
+
+    $("#exportProcessDT").DataTable({
+        data: dataSet,
+        processing: true,                  
+        scrollY: '60vh',
+        scrollX:true,
+        autoWidth: true,
+        deferRender: true,
+        pageLength: 50,
+        scrollCollapse: true,
+        searchDelay: 200,
+        scroller: true,
+        order: [[3, 'desc']],
+        stateSave:true,
+        responsive:true,
+        columnDefs: [
+            {
+                targets: 0,
+                visible: false
+            }
+        ],
+        buttons: [
+            {
+                extend: 'copyHtml5',
+                className: 'btn-sm button-history btn-outline-primary dtbuttons',
+                text: '<i class="fa fa-copy"></i>',
+                titleAttr: 'Copy',
+                exportOptions: {
+                    columns: ':visible'
+                },
+                action: function (e, dt, button, config) {
+                    // Custom implementation for faster copying
+                    const columnHeaders = dt.columns().header().toArray().map(header => header.innerText);
+                    const rowData = dt.rows({ search: 'applied' }).data().toArray().map(row => Object.values(row).join('\t'));
+                    const clipboardData = [columnHeaders.join('\t'), ...rowData].join('\n');
+
+                    const tempTextArea = document.createElement('textarea');
+                    tempTextArea.value = clipboardData;
+                    document.body.appendChild(tempTextArea);
+                    tempTextArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempTextArea);
+
+                    const msg = `Copied ${rowData.length} rows to clipboard!`;
+                    document.getElementById('batchbodyCopy').innerHTML = msg;
+                    $('#BatchHistoyCopy').modal('show');
+
+                    //Automatically close popup after 10 seconds
+                    setTimeout(() => {
+                        $('#BatchHistoyCopy').modal('hide');
+                    }, 1000);
+
+
+                }
+            },
+            {
+                extend: 'csvHtml5',
+                className: 'btn-sm button-history btn-outline-success dtbuttons',
+                text: '<i class="fa fa-file-csv"></i>',
+                titleAttr: 'Export as CSV',
+                filename: `BatchHistoryData_${date}`,
+                exportOptions: {
+                    columns: ':visible'
+                },
+                action: function (e, dt, button, config) {
+                    // Custom CSV generation for large datasets
+                    const columnHeaders = dt.columns().header().toArray().map(header => header.innerText);
+
+                    const rowData = dt.rows({ search: 'applied' }).data().toArray().map(row => Object.values(row).join(','));
+
+                    const csvData = [columnHeaders.join(','), ...rowData].join('\n');
+
+                    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', `${config.filename}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            },
+            {
+                extend: 'excelHtml5',
+                className: 'btn-sm button-history btn-outline-success dtbuttons',
+                text: '<i class="fa fa-file-excel"></i>',
+                titleAttr: 'Export as Excel',
+                filename: `BatchHistoryData_${date}`,
+                exportOptions: {
+                    columns: ':visible'  // This will export only visible columns
+                },
+                action: function (e, dt, button, config) {
+
+                    const workbook = new ExcelJS.Workbook();
+                    const worksheet = workbook.addWorksheet("Batch History");
+
+                    const columnHeaders = dt.columns().header().toArray().map(header => header.innerText);
+                    const rowData = dt.rows({ search: 'applied' }).data().toArray();
+
+                    worksheet.addRow(["Batch History | Exports Web Portal"]);
+                    //worksheet.getCell("A1").font = { bold: true};
+                    worksheet.getCell("A1").alignment = { horizontal: "center" };
+
+                    worksheet.mergeCells(1, 1, 1, columnHeaders.length);
+
+                    const headerRow = worksheet.addRow(columnHeaders);
+                    headerRow.eachCell(cell => {
+                        cell.font = { bold: true };
+                        /*cell.alignment = { horizontal: "center", vertical:'center' };*/
+                        cell.fill = { type: "pattern" };
+                    });
+
+                    rowData.forEach(row => worksheet.addRow(row));
+
+                    worksheet.columns.forEach((col, index) => {
+                        let maxLength = 0;
+                        col.eachCell({ includeEmpty: true }, cell => {
+                            if (cell.value) {
+                                const cellLength = cell.value.toString().length;
+                                maxLength = Math.max(maxLength, cellLength);
+                            }
+                        });
+                        if (index === worksheet.columns.length - 1) {
+                            col.width = maxLength - 13
+                        }
+                        else if (index === worksheet.columns.length - 2) {
+                            col.width = maxLength - 10
+                        }
+                        else {
+                            col.width = maxLength + 1; // Add padding for better readability
+                        }
+                    });
+
+
+                    workbook.xlsx.writeBuffer().then(buffer => {
+                        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                        const link = document.createElement("a");
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = `BatchHistory_${date}.xlsx`;
+                        link.click();
+                    });
+
+                }
+            },
+            {
+                extend: 'colvis',
+                text: '<i class="fa fa-columns"></i>',
+                titleAttr: 'Columns Visibility',
+                className: 'btn-sm dropdown-toggle button-history dtbuttons btn-outline-secondary',
+                columns: ':not(:first-child)',
+
+            }
+        ],
+        dom:
+            "<'row'<'col-sm-5'B><'col-sm-3'l><'col-sm-4'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-6'i><'col-sm-6'p>>",
+        drawCallback: function () {
+            $('.page-link').addClass('btn-sm');
+            $('.dataTables_info').addClass('btn-sm');
+            $('.dataTables_length').addClass('btn-sm');
+            $('.dataTables_filter').addClass('btn-sm');
+            var api = this.api();
+            if (api.rows().count() > 0) {
+                $('.button-history').show();
+            }
+            else {
+                $('.button-history').hide();
+            }
+            var classButtons = $('.dtbuttons');
+            classButtons.each(function () {
+                $(this).removeClass('btn-secondary');
+            });
+        }
+
+    });
+    $(document).on('click', '.buttons-csv, .buttons-excel, .buttons-copy', function () {
+        const button = $(this);
+        button.addClass('processing');
+        setTimeout(function () {
+            button.removeClass('processing');
+        }, 1000);
+
+    });
+
+    var classButtons = document.querySelectorAll('.dtbuttons');
+
+    classButtons.forEach(function (button) {
+        button.classList.remove('btn-secondary');
+    });
+   
+}); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
