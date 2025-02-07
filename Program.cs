@@ -1,3 +1,49 @@
+$(document).ready(function () {
+    var table = $('#exportProcessDT').DataTable({
+        processing: true,
+        serverSide: true,
+        searching: true,
+        ordering: true,
+        paging: true,
+        ajax: {
+            url: '/Insight/GetBatchHistoryData',
+            type: 'POST',
+            data: function (d) {
+                var columnMap = {
+                    0: "batchKey",
+                    1: "exportProcessDescription",
+                    2: "exportProcessName",
+                    3: "createdDate",
+                    4: "authorizationIncluded"
+                };
+
+                var orderColumnIndex = d.order.length > 0 ? d.order[0].column : 3;
+                d.sortColumn = columnMap[orderColumnIndex] || "createdDate";
+                d.sortDirection = d.order.length > 0 ? d.order[0].dir : "desc";
+
+                // Add column-wise search values
+                $('#exportProcessDT thead .column-search').each(function () {
+                    var index = $(this).data('index');
+                    d['columns[' + index + '][search][value]'] = $(this).val();
+                });
+            }
+        },
+        columns: [
+            { data: "batchKey", visible: false },
+            { data: "exportProcessDescription" },
+            { data: "exportProcessName" },
+            { data: "createdDate" },
+            { data: "authorizationIncluded" }
+        ]
+    });
+
+    // 🔹 Enable Column-wise Search
+    $('#exportProcessDT thead .column-search').on('keyup change', function () {
+        table.draw();  // Refresh DataTable on input change
+    });
+});
+
+
 $('#exportProcessDT thead input').on('keyup', function () {
         var columnIndex = $(this).parent().index();
         table.column(columnIndex).search(this.value).draw();
