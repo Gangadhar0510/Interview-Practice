@@ -1,3 +1,200 @@
+$(document).ready(function () {
+    var table = $('#exportProcessDT').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '/Insight/GetBatchHistoryData', // Update the URL to match your controller action
+            type: 'POST',
+            data: function (d) {
+                d.exportProcessName = $('#exportProcessName').val();
+                d.daterange = $('#daterange').val();
+            }
+        },
+        columns: [
+            { data: "BatchKey", name: "BatchKey", visible: false }, // Hidden field
+            { data: "ExportProcessDescription", name: "ExportProcessDescription" },
+            { data: "ExportProcessName", name: "ExportProcessName" },
+            { data: "Date", name: "Date" },
+            { data: "AuthorizationIncluded", name: "AuthorizationIncluded" }
+        ],
+        order: [[3, "desc"]], // Sorting by Date column
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        dom:
+            "<'row'<'col-sm-5'B><'col-sm-3'l><'col-sm-4'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-6'i><'col-sm-6'p>>",
+        buttons: [
+            {
+                extend: 'csv',
+                className: 'btn-sm dtbuttons btn-outline-secondary',
+                text: 'CSV'
+            },
+            {
+                extend: 'excel',
+                className: 'btn-sm dtbuttons btn-outline-secondary',
+                text: 'Excel'
+            }
+        ],
+        drawCallback: function () {
+            var api = this.api();
+            if (api.rows().count() > 0) {
+                $('.button-history').show();
+            } else {
+                $('.button-history').hide();
+            }
+        }
+    });
+
+    $('#batchHistoryButton').on('click', function (e) {
+        e.preventDefault();
+        table.ajax.reload();
+    });
+});
+
+<div class="card">
+    <ol class="breadcrumb">
+        <li id="breadcrumb-main" class="breadcrumb-item">Insight</li>
+        <li id="breadcrumb-current" class="breadcrumb-item active">Batch History</li> &nbsp;
+        <li class="fas fa-info-circle text-primary breadcrumb tooltipicon pb-2"
+            data-toggle="tooltipBatchHistory"
+            data-custom-class="custom-tooltip"
+            tabindex="0"
+            data-html="true"
+            data-placement="auto"
+            title="@toolTipMsg">
+        </li>
+    </ol>
+    <section class="content">
+        <div class="card-body">
+            <div id="mainBatchHistory">
+                <form id="batchHistoryForm">
+                    <div class="form-group input-group input-group-sm row ml-1">
+                        <label for="exportProcessName" class="mr-2 mt-1">Export Process:</label>
+                        <select class="form-control form-control-sm col-md-3" name="exportProcessName" id="exportProcessName">
+                            <option>All</option>
+                            @foreach (var item in ViewBag.exportProcesses)
+                            {
+                                <option value="@item.Name" title="@item.Name">@item.ExportProcessDescription</option>
+                            }
+                        </select>
+                        &nbsp;&nbsp;
+                        <label for="daterange" class="mr-2 mt-1">Date Range:</label>
+                        <input type="text" id="daterange" name="daterange" class="form-control form-control-sm col-md-2" placeholder="YYYY-MM-DD - YYYY-MM-DD" />
+                        <button id="batchHistoryButton" class="btn btn-info searchButton form-control-sm" type="submit">Search</button>
+                    </div>
+                </form>
+
+                <table id="exportProcessDT" class="table nowrap display table-striped table-bordered table-hover table-sm" width="100%">
+                    <thead>
+                        <tr>
+                            <th hidden>Batch Key</th>
+                            <th>Export Process Description</th>
+                            <th>Export Process Name</th>
+                            <th>Created Date</th>
+                            <th>Authorization Included</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="card">
+    <ol class="breadcrumb">
+        <li id="breadcrumb-main" class="breadcrumb-item">Insight</li>
+        <li id="breadcrumb-current" class="breadcrumb-item active">Batch History</li> &nbsp;
+        <li class="fas fa-info-circle text-primary breadcrumb tooltipicon pb-2"
+            data-toggle="tooltipBatchHistory"
+            data-custom-class="custom-tooltip"
+            tabindex="0"
+            data-html="true"
+            data-placement="auto"
+            title="@toolTipMsg">
+        </li>
+    </ol>
+    <section class="content">
+        <div class="card-body">
+            <div id="mainBatchHistory">
+                <form id="batchHistoryForm">
+                    <div class="form-group input-group input-group-sm row ml-1">
+                        <label for="exportProcessName" class="mr-2 mt-1">Export Process:</label>
+                        <select class="form-control form-control-sm col-md-3" name="exportProcessName" id="exportProcessName">
+                            <option>All</option>
+                            @foreach (var item in ViewBag.exportProcesses)
+                            {
+                                <option value="@item.Name" title="@item.Name">@item.ExportProcessDescription</option>
+                            }
+                        </select>
+                        &nbsp;&nbsp;
+                        <label for="daterange" class="mr-2 mt-1">Date Range:</label>
+                        <input type="text" id="daterange" name="daterange" class="form-control form-control-sm col-md-2" placeholder="YYYY-MM-DD - YYYY-MM-DD" />
+                        <button id="batchHistoryButton" class="btn btn-info searchButton form-control-sm" type="submit">Search</button>
+                    </div>
+                </form>
+
+                <table id="exportProcessDT" class="table nowrap display table-striped table-bordered table-hover table-sm" width="100%">
+                    <thead>
+                        <tr>
+                            <th hidden>Batch Key</th>
+                            <th>Export Process Description</th>
+                            <th>Export Process Name</th>
+                            <th>Created Date</th>
+                            <th>Authorization Included</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+
+[HttpPost]
+public IActionResult GetBatchHistoryData([FromForm] DataTableRequest request)
+{
+    var query = _context.BatchHistory.AsQueryable(); // Replace _context with your actual DB context
+
+    if (!string.IsNullOrEmpty(request.exportProcessName) && request.exportProcessName != "All")
+    {
+        query = query.Where(b => b.ExportProcessName == request.exportProcessName);
+    }
+
+    if (!string.IsNullOrEmpty(request.daterange))
+    {
+        var dates = request.daterange.Split('-');
+        if (dates.Length == 2)
+        {
+            DateTime startDate = DateTime.Parse(dates[0].Trim());
+            DateTime endDate = DateTime.Parse(dates[1].Trim());
+            query = query.Where(b => b.Date >= startDate && b.Date <= endDate);
+        }
+    }
+
+    int totalRecords = query.Count();
+
+    var data = query
+        .Skip(request.start)
+        .Take(request.length)
+        .Select(b => new
+        {
+            BatchKey = b.BatchKey,
+            ExportProcessDescription = b.ExportProcessDescription,
+            ExportProcessName = b.ExportProcessName,
+            Date = b.Date.ToString("yyyy-MM-dd hh:mm:ss tt"), // Formatting Date
+            AuthorizationIncluded = b.AuthorizationIncluded
+        })
+        .ToList();
+
+    return Json(new
+    {
+        draw = request.draw,
+        recordsTotal = totalRecords,
+        recordsFiltered = totalRecords,
+        data = data
+    });
+                }
+
+
 <script>
     var dataFromServer = @Html.Raw(Json.Serialize(Model));
 
