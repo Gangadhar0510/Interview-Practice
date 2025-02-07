@@ -1,3 +1,44 @@
+WITH cte_ExportProcess AS (
+    SELECT EP.ExportProcessKey, EP.[Name], EP.ExportProcessDescription
+    FROM Exports.Canonical.ExportProcess EP (NOLOCK)
+    WHERE (@exportProcessName = 'All' OR EP.[Name] = @exportProcessName)
+      AND (EP.[Name] LIKE '%Batch%' OR EP.[Name] LIKE '%Manual%')
+)
+SELECT 
+    EB.CreatedDate,
+    EP.[Name],
+    EB.ExportBatchKey,
+    COUNT(EB_AI.AuthorizationInstanceKey) AS AuthCount,
+    ISNULL(NULLIF(EP.ExportProcessDescription, ''), EP.[Name]) AS ExportProcessDescription
+FROM Exports.EDI.ExportBatch EB (NOLOCK) 
+
+-- Use Indexed Joins
+INNER LOOP JOIN cte_ExportProcess EP (NOLOCK)
+    ON EP.ExportProcessKey = EB.ExportProcessKey
+
+INNER LOOP JOIN Exports.EDI.ExportBatch_AuthorizationInstance EB_AI (NOLOCK)
+    ON EB_AI.ExportBatchKey = EB.ExportBatchKey
+
+INNER LOOP JOIN Exports.Canonical.AuthorizationDestination AD (NOLOCK)
+    ON AD.AuthorizationKey = EB_AI.AuthorizationInstanceKey
+
+INNER LOOP JOIN Exports.Canonical.AuthorizationDestinationStatus ADS (NOLOCK)
+    ON ADS.AuthorizationDestinationStatusKey = AD.AuthorizationDestinationStatusKey
+
+-- Optimized WHERE Condition
+WHERE EB.CreatedDate >= @startDate
+  AND EB.CreatedDate < DATEADD(DAY, 1, @endDate)
+
+-- Use Hash Aggregation for Faster Grouping
+GROUP BY 
+    EB.CreatedDate,
+    EB.ExportBatchKey,
+    EP.[Name],
+    EP.ExportProcessDescription
+ORDER BY 
+    EB.CreatedDate DESC 
+OPTION (MAXDOP 4, RECOMPILE);  -- Parallelism and Recompilation for Faster Execution
+
 -- Step 1: Pre-Aggregate Authorization Counts (Reduces Join Complexity)
 SELECT 
     EB_AI.ExportBatchKey,
