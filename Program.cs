@@ -1,3 +1,59 @@
+-- Step 1: Pre-Aggregate Authorization Counts (Reduces Join Complexity)
+SELECT 
+    EB_AI.ExportBatchKey,
+    COUNT(AD.AuthorizationKey) AS AuthCount
+INTO #TempAuthCounts
+FROM Exports.EDI.ExportBatch_AuthorizationInstance EB_AI (NOLOCK)
+INNER JOIN Exports.Canonical.AuthorizationDestination AD (NOLOCK)
+    ON AD.AuthorizationKey = EB_AI.AuthorizationInstanceKey
+GROUP BY EB_AI.ExportBatchKey;
+
+-- Step 2: Create Index for Faster Lookups
+CREATE CLUSTERED INDEX IDX_TempAuthCounts ON #TempAuthCounts (ExportBatchKey);
+
+-- Step 3: Store Export Process Data in a Temporary Table
+SELECT ExportProcessKey, [Name], ExportProcessDescription
+INTO #Temp_ExportProcess
+FROM Exports.Canonical.ExportProcess EP (NOLOCK)
+WHERE (@exportProcessName = 'All' OR EP.[Name] = @exportProcessName)
+  AND (EP.[Name] LIKE '%Batch%' OR EP.[Name] LIKE 'Manual%');
+
+-- Step 4: Create an Index on the Temporary Export Process Table
+CREATE CLUSTERED INDEX IDX_Temp_ExportProcess ON #Temp_ExportProcess (ExportProcessKey);
+
+-- Step 5: Optimized Query with Pre-Aggregation
+SELECT 
+    EB.CreatedDate,
+    EP.[Name],
+    EB.ExportBatchKey,
+    COALESCE(TAC.AuthCount, 0) AS AuthCount, -- Using Pre-Aggregated Data
+    CASE 
+        WHEN EP.ExportProcessDescription IS NULL OR EP.ExportProcessDescription = '' 
+        THEN EP.[Name]
+        ELSE EP.ExportProcessDescription
+    END AS ExportProcessDescription
+FROM Exports.EDI.ExportBatch EB WITH (INDEX = IDX_ExportBatch_CreatedDate) -- Force Index for Faster Lookup
+
+-- Join with Pre-Filtered Export Process Table
+INNER JOIN #Temp_ExportProcess EP (NOLOCK)
+    ON EP.ExportProcessKey = EB.ExportProcessKey
+
+-- Join with Pre-Aggregated Authorization Data
+LEFT JOIN #TempAuthCounts TAC (NOLOCK)
+    ON TAC.ExportBatchKey = EB.ExportBatchKey
+
+-- Corrected WHERE Clause (Avoids Function Calls)
+WHERE EB.CreatedDate >= @startDate
+  AND EB.CreatedDate < DATEADD(day, 1, @endDate) 
+
+-- Grouping & Sorting
+ORDER BY EB.CreatedDate DESC;
+
+-- Step 6: Cleanup Temporary Tables After Query Execution
+DROP TABLE #Temp_ExportProcess;
+DROP TABLE #TempAuthCounts;
+
+
 -- Step 1: Pre-Aggregate Authorization Counts
 SELECT 
     AuthorizationKey, 
