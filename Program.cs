@@ -1,3 +1,58 @@
+
+public IActionResult EdiBatchHistory(string daterange,string exportProcessName = "All")
+        {
+            DateTime startDate = new DateTime();
+            DateTime endDate = new DateTime();
+
+            if (daterange == null)
+            {
+                DateTime currentDate = DateTime.Now;
+                 startDate = currentDate.AddDays(-4);
+                 endDate = currentDate;
+
+                string formattedStartDate = startDate.ToString("MM/dd/yyyy");
+                string formattedEndDate = endDate.ToString("MM/dd/yyyy");
+
+                 daterange =$"{formattedStartDate}-{formattedEndDate}";
+            }
+            else
+            {
+                string[] dateValues = daterange.Split('-').Select(sValue => sValue.Trim()).ToArray();
+                startDate = Convert.ToDateTime(dateValues[0]);
+                endDate = Convert.ToDateTime(dateValues[1]);
+                
+            }
+            
+            SerilogPlugin.logInformation("EdiBatchHistory", "EdiBatchHistory - Method Entry", @object: daterange + "," + exportProcessName);
+            ViewData["Title"] = "Batch History";
+            EdiBatchInsightModel ediBatchInsightModel = new EdiBatchInsightModel();
+            ediBatchInsightModel.batchCounts = new List<BatchCount>();          
+
+            List<BatchHistoryDataModel> batchResult = _batchHistory.GetBatchHistoryData(exportProcessName, startDate.Date,endDate.Date);            
+            if (_batchMemoryCache.Get<List<ExportProcessViewModel>>("ExportProcesses") == null)
+            {
+                List<ExportProcessViewModel> exportProcesses = GetExportProcesses();
+                _batchMemoryCache.Set<List<ExportProcessViewModel>>("ExportProcesses",exportProcesses.Where(x=>x.Name.Contains("Batch") || x.Name.Contains("Manual")).ToList());
+            }
+
+            ViewBag.exportProcesses = _batchMemoryCache.Get<List<ExportProcessViewModel>>("ExportProcesses");
+
+            List<BatchCount> batchCounts = batchResult.Select(exportBatch =>
+             new BatchCount
+             {
+                 ExportProcessName = exportBatch.Name,
+                 ExportDate = exportBatch.CreatedDate,
+                 Count = exportBatch.AuthCount,
+                 BatchKey = exportBatch.ExportBatchKey,
+                 ExportProcessDescription = exportBatch.ExportProcessDescription
+             }).ToList();
+
+            ediBatchInsightModel.batchCounts.AddRange(batchCounts);
+            ViewBag.exportProcessNameParam = exportProcessName;            
+            ViewBag.dateRangeParam = daterange;
+            SerilogPlugin.logInformation("EdiBatchHistory", "EdiBatchHistory- Method Exit", @object: ediBatchInsightModel.batchCounts);
+            return View(ediBatchInsightModel);
+        }
 $(document).ready(function () {
     var table = $('#exportProcessDT').DataTable({
         processing: true,
