@@ -29,6 +29,54 @@ BEGIN
         EP.[Name] AS ExportProcessName,
         EB.ExportBatchKey,
         COUNT(EB_AI.AuthorizationInstanceKey) AS AuthCount,
+        COALESCE(NULLIF(EP.ExportProcessDescription, ''), EP.[Name]) AS ExportProcessDescription
+    FROM Exports.EDI.ExportBatch EB (NOLOCK)
+    INNER JOIN cte_ExportProcess EP (NOLOCK)
+        ON EP.ExportProcessKey = EB.ExportProcessKey
+    INNER JOIN Exports.EDI.ExportBatch_AuthorizationInstance EB_AI (NOLOCK)
+        ON EB_AI.ExportBatchKey = EB.ExportBatchKey
+    INNER JOIN #TempAuthorizationDest TAD (NOLOCK)
+        ON TAD.AuthorizationKey = EB_AI.AuthorizationInstanceKey
+    WHERE EB.CreatedDate BETWEEN @startDate AND @endDate
+    GROUP BY EB.CreatedDate, EB.ExportBatchKey, EP.[Name], EP.ExportProcessDescription
+    ORDER BY EB.CreatedDate DESC;
+
+    -- Drop the temporary table
+    DROP TABLE #TempAuthorizationDest;
+END;
+
+
+CREATE PROCEDURE GetExportProcessDetails
+    @exportProcessName VARCHAR(255),
+    @startDate DATE,
+    @endDate DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Temporary table to store Authorization Keys with 'Exported' status
+    CREATE TABLE #TempAuthorizationDest (AuthorizationKey UNIQUEIDENTIFIER);
+
+    INSERT INTO #TempAuthorizationDest (AuthorizationKey)
+    SELECT AD.AuthorizationKey
+    FROM Exports.Canonical.AuthorizationDestination AD (NOLOCK)
+    INNER JOIN Exports.Canonical.AuthorizationDestinationStatus ADS (NOLOCK)
+        ON AD.AuthorizationDestinationStatusKey = ADS.AuthorizationDestinationStatusKey
+    WHERE ADS.[Name] = 'Exported';
+
+    -- Common Table Expression (CTE) for Export Process filtering
+    WITH cte_ExportProcess AS
+    (
+        SELECT EP.ExportProcessKey, EP.[Name], EP.ExportProcessDescription
+        FROM Exports.Canonical.ExportProcess EP (NOLOCK)
+        WHERE @exportProcessName = 'All' OR EP.[Name] = @exportProcessName
+    )
+    -- Main query to retrieve export batch details
+    SELECT 
+        EB.CreatedDate,
+        EP.[Name] AS ExportProcessName,
+        EB.ExportBatchKey,
+        COUNT(EB_AI.AuthorizationInstanceKey) AS AuthCount,
         ISNULL(NULLIF(EP.ExportProcessDescription, ''), EP.[Name]) AS ExportProcessDescription
     FROM Exports.EDI.ExportBatch EB (NOLOCK)
     INNER JOIN cte_ExportProcess EP (NOLOCK)
