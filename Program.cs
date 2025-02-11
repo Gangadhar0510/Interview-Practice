@@ -1,3 +1,55 @@
+<section class="content">
+    <div class="col-sm-12 col-md-12 ml-3 mb-2">
+        <div class="d-flex w-100">
+            <div class="col-md-6 input-group mb-1">
+                <input class="form-control col-sm-6 input-sm" id="authId" name="authId" placeholder="Enter Authorization">
+
+                <span class="input-group-append">
+                    <button type="button" class="btn btn-info btn-block" id="searchBtn">Search</button>
+                </span>
+            </div>
+
+            <!-- Button aligned to the right -->
+            <div class="ml-auto">
+                <button type="button" id="compare-export" class="btn btn-warning btn-block">See Export Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Placeholder for AJAX Response -->
+    <div id="authHistoryContainer">
+        @await Html.PartialAsync("_AuthHistoryPartial.cshtml", Model)
+    </div>
+</section>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#searchBtn").click(function () {
+            var authId = $("#authId").val();
+
+            $.ajax({
+                url: '@Url.Action("AuthHistory", "Insight")', // Your controller action
+                type: "GET", // Change to POST if needed
+                data: { authId: authId },
+                beforeSend: function () {
+                    $("#searchBtn").prop("disabled", true).text("Searching...");
+                },
+                success: function (response) {
+                    $("#authHistoryContainer").html(response);
+                },
+                complete: function () {
+                    $("#searchBtn").prop("disabled", false).text("Search");
+                },
+                error: function () {
+                    alert("An error occurred while fetching data.");
+                }
+            });
+        });
+    });
+</script>
+
+
 CREATE PROCEDURE GetExportProcessDetails
     @exportProcessName VARCHAR(255),
     @startDate DATE,
