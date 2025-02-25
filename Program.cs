@@ -1,3 +1,44 @@
+#contextMenuPendingAuth {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 5px 0;
+    list-style: none;
+    display: none;
+    z-index: 1000;
+    border-radius: 4px;
+    min-width: 150px;
+}
+
+/* Arrow pointing to the clicked row */
+#contextMenuPendingAuth::before {
+    content: "";
+    position: absolute;
+    top: -10px; /* Adjust based on placement */
+    left: 10px; /* Adjust based on desired arrow position */
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 10px solid #ccc; /* Arrow color */
+}
+
+/* Inner arrow to match menu background */
+#contextMenuPendingAuth::after {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: 11px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 8px solid white; /* Match the background */
+}
+
+
+
 <section class="content">
     <div class="col-sm-12 col-md-12 ml-3 mb-2">
         <div class="d-flex w-100">
