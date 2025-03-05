@@ -1,3 +1,63 @@
+<thead>
+    <tr>
+        <th><input name="ExportProcess" type="text" class="form-control form-control-sm"></th>
+        <th>
+            <input type="text" id="dateRange" class="form-control form-control-sm" placeholder="Select Date Range">
+        </th>
+        <th><input name="AuthID" type="text" class="form-control form-control-sm" placeholder="Auth ID"></th>
+        <th><input name="AuthKey" class="form-control form-control-sm" type="text" placeholder="Auth Key"></th>
+    </tr>
+    <tr class="serp-row-header bg-navy color-palette">
+        <th>Export Process</th>
+        <th>Staged Date</th>
+        <th>Auth ID</th>
+        <th>Auth Key</th>
+    </tr> 
+</thead>
+
+$(document).ready(function () {
+    var table = $('#PendingAuthsDT').DataTable();
+
+    // Initialize Date Range Picker
+    $("#dateRange").daterangepicker({
+        autoUpdateInput: false,
+        locale: {
+            cancelLabel: 'Clear'
+        }
+    });
+
+    // Apply the selected date range filter
+    $("#dateRange").on('apply.daterangepicker', function (ev, picker) {
+        var startDate = picker.startDate.format('YYYY-MM-DD');
+        var endDate = picker.endDate.format('YYYY-MM-DD');
+        $(this).val(startDate + ' to ' + endDate);
+
+        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+            var date = new Date(data[1]); // Assuming "Staged Date" is in column index 1
+            var min = new Date(startDate);
+            var max = new Date(endDate);
+
+            return (date >= min && date <= max);
+        });
+
+        table.draw();
+    });
+
+    // Clear filter on cancel
+    $("#dateRange").on('cancel.daterangepicker', function (ev, picker) {
+        $(this).val('');
+        $.fn.dataTable.ext.search.pop();
+        table.draw();
+    });
+
+    // Text search for other columns
+    $('#PendingAuthsDT thead').on('keyup', 'input[type="text"]', function () {
+        table.column($(this).parent().index())
+            .search(this.value)
+            .draw();
+    });
+});
+
 
 <thead>
     <tr>
