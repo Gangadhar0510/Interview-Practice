@@ -1,3 +1,54 @@
+
+<thead>
+    <tr>
+        <th><input name="ExportProcess" type="text" class="form-control form-control-sm"></th>
+        <th>
+            <input type="date" id="minDate" class="form-control form-control-sm" placeholder="From Date">
+            <input type="date" id="maxDate" class="form-control form-control-sm" placeholder="To Date">
+        </th>
+        <th><input name="AuthID" type="text" class="form-control form-control-sm" placeholder="Auth ID"></th>
+        <th><input name="AuthKey" class="form-control form-control-sm" type="text" placeholder="Auth Key"></th>
+    </tr>
+    <tr class="serp-row-header bg-navy color-palette">
+        <th>Export Process</th>
+        <th>Staged Date</th>
+        <th>Auth ID</th>
+        <th>Auth Key</th>
+    </tr> 
+</thead>
+$(document).ready(function () {
+    var table = $('#PendingAuthsDT').DataTable();
+
+    // Custom search function for date range
+    $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        var min = $('#minDate').val() ? new Date($('#minDate').val()) : null;
+        var max = $('#maxDate').val() ? new Date($('#maxDate').val()) : null;
+        var date = new Date(data[1]); // Assuming "Staged Date" is the second column (index 1)
+
+        if (
+            (min === null && max === null) ||
+            (min === null && date <= max) ||
+            (min <= date && max === null) ||
+            (min <= date && date <= max)
+        ) {
+            return true;
+        }
+        return false;
+    });
+
+    // Trigger filtering when date inputs change
+    $('#minDate, #maxDate').on('change', function () {
+        table.draw();
+    });
+
+    // Text search for other columns
+    $('#PendingAuthsDT thead').on('keyup', 'input[type="text"]', function () {
+        table.column($(this).parent().index())
+            .search(this.value)
+            .draw();
+    });
+});
+
 #contextMenuPendingAuth {
     position: absolute;
     background: white;
