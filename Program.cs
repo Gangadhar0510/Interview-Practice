@@ -1,3 +1,58 @@
+$(document).ready(function () {
+    var table = $('#PendingAuthsDT').DataTable();
+
+    function filterByDate(startDate, endDate) {
+        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+            var date = new Date(data[1]); // Assuming "Staged Date" is in column index 1
+            var min = new Date(startDate);
+            var max = new Date(endDate);
+
+            return (date >= min && date <= max);
+        });
+
+        table.draw();
+    }
+
+    $("#dateRange").daterangepicker({
+        autoUpdateInput: false,
+        locale: { cancelLabel: 'Clear' },
+        ranges: {
+            'Today': [moment(), moment()],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 1 Month': [moment().subtract(1, 'months'), moment()],
+            'Last 2 Months': [moment().subtract(2, 'months'), moment()],
+            'Last 1 Year': [moment().subtract(1, 'years'), moment()],
+            'Custom Range': []
+        }
+    });
+
+    // Apply the selected date range filter
+    $("#dateRange").on('apply.daterangepicker', function (ev, picker) {
+        var startDate = picker.startDate.format('YYYY-MM-DD');
+        var endDate = picker.endDate.format('YYYY-MM-DD');
+        $(this).val(startDate + ' to ' + endDate);
+
+        // Remove old filter and apply new
+        $.fn.dataTable.ext.search.pop();
+        filterByDate(startDate, endDate);
+    });
+
+    // Clear filter on cancel
+    $("#dateRange").on('cancel.daterangepicker', function (ev, picker) {
+        $(this).val('');
+        $.fn.dataTable.ext.search.pop();
+        table.draw();
+    });
+
+    // Text search for other columns
+    $('#PendingAuthsDT thead').on('keyup', 'input[type="text"]', function () {
+        table.column($(this).parent().index())
+            .search(this.value)
+            .draw();
+    });
+});
+
+
 <thead>
     <tr>
         <th><input name="ExportProcess" type="text" class="form-control form-control-sm"></th>
