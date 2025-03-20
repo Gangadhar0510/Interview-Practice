@@ -1,4 +1,35 @@
 <script>
+    $(document).ready(function () {
+        // Prevent expanding <details> when clicking Copy or Download
+        $(document).on("click", ".copy-btn, .download-btn", function (event) {
+            event.stopPropagation();
+        });
+
+        // Copy to Clipboard
+        $(document).on("click", ".copy-btn", function () {
+            let eventData = $(this).closest(".timeline-item").find(".event-data").text().trim();
+            navigator.clipboard.writeText(eventData).then(() => {
+                alert("Copied to clipboard!");
+            }).catch(err => console.error("Copy failed:", err));
+        });
+
+        // Download as Word Document
+        $(document).on("click", ".download-btn", function () {
+            let eventData = $(this).closest(".timeline-item").find(".event-data").text().trim();
+            let blob = new Blob(["\ufeff" + eventData], { type: "application/msword" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "EventData.doc";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    });
+</script>
+
+
+
+<script>
     document.addEventListener("click", function (event) {
         // Prevent <details> from expanding when clicking Copy or Download
         if (event.target.closest(".copy-btn, .download-btn")) {
