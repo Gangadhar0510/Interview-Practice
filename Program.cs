@@ -1,3 +1,10 @@
+$(document).on("mousedown", ".timeline-item", function (event) {
+            if ($(event.target).is(".copy-btn, .download-btn, .time i, .time b")) {
+                event.preventDefault(); // Stops <details> expansion
+            }
+        });
+
+
 <script>
     $(document).ready(function () {
         // Prevent expanding <details> when clicking Copy or Download
