@@ -1,3 +1,71 @@
+<!-- Timeline Item -->
+<div class="timeline-item">
+    <span class="time">
+        <i class="fas fa-clock text-dark"></i>&nbsp; <b>@busEvent.SentDate.ToShortTimeString()</b>
+    </span>
+
+    <details>
+        <summary class="card-header">
+            <i class="fas fa-bell text-warning"></i> <!-- Notification icon -->
+            @busEvent.Name
+        </summary>
+
+        <!-- Buttons: Copy & Download -->
+        <div class="mt-2 float-right">
+            <!-- Copy Button -->
+            <button class="btn btn-sm text-primary copy-btn" data-toggle="tooltip" title="Copy">
+                <i class="fas fa-copy"></i> Copy
+            </button>
+
+            <!-- Download Button -->
+            <button class="btn btn-sm text-success download-btn" data-toggle="tooltip" title="Download as Word">
+                <i class="fas fa-file-word"></i> Word
+            </button>
+        </div>
+
+        <!-- Event Data -->
+        <div class="card-body p-1" style="max-height:400px; overflow:auto;">
+            <pre>@busEvent.EventData</pre>
+        </div>
+    </details>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Prevent expanding when clicking Copy or Download
+        document.querySelectorAll(".copy-btn, .download-btn").forEach(btn => {
+            btn.addEventListener("click", function (event) {
+                event.stopPropagation(); // Prevent <details> expansion
+            });
+        });
+
+        // Copy Event Data
+        document.querySelectorAll(".copy-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const eventData = this.closest(".timeline-item").querySelector("pre").innerText;
+                navigator.clipboard.writeText(eventData).then(() => {
+                    alert("Copied to clipboard!");
+                });
+            });
+        });
+
+        // Download Event Data as Word
+        document.querySelectorAll(".download-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                const eventData = this.closest(".timeline-item").querySelector("pre").innerText;
+                const blob = new Blob([eventData], { type: "application/msword" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "EventData.doc";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        });
+    });
+</script>
+
+
 $(document).ready(function () {
     // Copy Individual Event
     $(".copy-btn").on("click", function () {
