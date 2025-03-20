@@ -1,4 +1,122 @@
 $(document).ready(function () {
+    // Copy Individual Event
+    $(".copy-btn").on("click", function () {
+        var eventData = $(this).closest(".timeline-item").find(".event-content").text().trim();
+        var tempTextarea = $("<textarea>").val(eventData).appendTo("body").select();
+        document.execCommand("copy");
+        tempTextarea.remove();
+        alert("Event copied to clipboard!");
+    });
+
+    // Copy All Events
+    $("#copyAllBtn").on("click", function () {
+        var allText = "";
+        $(".timeline-item").each(function () {
+            var eventName = $(this).find("summary").text().trim();
+            var eventData = $(this).find(".event-content").text().trim();
+            allText += eventName + "\n" + eventData + "\n\n";
+        });
+
+        var tempTextarea = $("<textarea>").val(allText).appendTo("body").select();
+        document.execCommand("copy");
+        tempTextarea.remove();
+        alert("All events copied to clipboard!");
+    });
+
+    // Download Individual Event
+    $(".download-btn").on("click", function () {
+        var eventName = $(this).closest(".timeline-item").find("summary").text().trim();
+        var eventData = $(this).closest(".timeline-item").find(".event-content").text().trim();
+        var docContent = "<h2>" + eventName + "</h2><p>" + eventData.replace(/\n/g, "<br>") + "</p>";
+
+        var blob = new Blob(["<html><body>" + docContent + "</body></html>"], { type: "application/msword" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = eventName.replace(/[^a-zA-Z0-9]/g, "_") + ".doc"; // Clean file name
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
+
+    // Download All Events
+    $("#downloadAllBtn").on("click", function () {
+        var docContent = "<h2>Event Timeline</h2>";
+        $(".timeline-item").each(function () {
+            var eventName = $(this).find("summary").text().trim();
+            var eventData = $(this).find(".event-content").text().trim();
+            docContent += "<h3>" + eventName + "</h3><p>" + eventData.replace(/\n/g, "<br>") + "</p>";
+        });
+
+        var blob = new Blob(["<html><body>" + docContent + "</body></html>"], { type: "application/msword" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "EventTimeline.doc";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
+});
+
+
+@{
+    var groupedEvents = Model.BusEvents
+        .OrderByDescending(be => be.SentDate)
+        .GroupBy(be => be.SentDate.Date); // Grouping by date (ignoring time)
+}
+
+<div class="timeline">
+    @foreach (var group in groupedEvents)
+    {
+        <div class="time-label">
+            <span class="bg-gray">@group.Key.ToString("dd MMM yyyy")</span>
+        </div>
+
+        @foreach (var busEvent in group)
+        {
+            <div class="timeline-item">
+                <!-- Kafka notification icon -->
+                <i class="fas fa-stream bg-orange"></i> 
+
+                <span class="time">
+                    <i class="fas fa-clock"></i> @busEvent.SentDate.ToShortTimeString()
+                </span>
+
+                <details>
+                    <summary class="card-header">
+                        <i class="fas fa-bell text-warning"></i> @busEvent.Name
+                    </summary>
+
+                    <div class="card-body p-1" style="max-height:400px; overflow:auto;">
+                        <pre class="event-content">@busEvent.EventData</pre>
+                    </div>
+                </details>
+
+                <!-- Copy & Download Buttons for Each Event -->
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-primary copy-btn" data-event="@busEvent.Name">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                    <button class="btn btn-sm btn-success download-btn" data-event="@busEvent.Name">
+                        <i class="fas fa-file-word"></i> Download
+                    </button>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<!-- Buttons for Copy All and Download All -->
+<div class="mt-3">
+    <button class="btn btn-primary" id="copyAllBtn">
+        <i class="fas fa-copy"></i> Copy All Events
+    </button>
+    <button class="btn btn-success" id="downloadAllBtn">
+        <i class="fas fa-file-word"></i> Download All Events
+    </button>
+</div>
+
+
+$(document).ready(function () {
     var table = $('#PendingAuthsDT').DataTable();
 
     function filterByDate(startDate, endDate) {
