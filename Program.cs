@@ -1,3 +1,33 @@
+<script>
+    document.addEventListener("click", function (event) {
+        // Prevent <details> from expanding when clicking Copy or Download
+        if (event.target.closest(".copy-btn, .download-btn")) {
+            event.stopPropagation();
+        }
+
+        // Copy Event Data
+        if (event.target.closest(".copy-btn")) {
+            let eventData = event.target.closest(".timeline-item").querySelector(".event-data").innerText;
+            navigator.clipboard.writeText(eventData).then(() => {
+                alert("Copied to clipboard!");
+            }).catch(err => console.error("Copy failed:", err));
+        }
+
+        // Download as Word
+        if (event.target.closest(".download-btn")) {
+            let eventData = event.target.closest(".timeline-item").querySelector(".event-data").innerText;
+            let blob = new Blob(["\ufeff" + eventData], { type: "application/msword" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "EventData.doc";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    });
+</script>
+
+
 <!-- Timeline Item -->
 <div class="timeline-item">
     <span class="time">
