@@ -1,3 +1,10 @@
+$(".timeline-group[data-date='" + date + "'] .timeline-item").each(function () {
+            var eventText = $(this).find("details").text().trim();
+            allEvents.push(eventText);
+        });
+
+
+
 $(document).on("mousedown", ".timeline-item", function (event) {
             if ($(event.target).is(".copy-btn, .download-btn, .time i, .time b")) {
                 event.preventDefault(); // Stops <details> expansion
