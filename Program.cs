@@ -1,3 +1,18 @@
+
+$(".toggle-timeline").on("click", function () {
+        let eventGroup = $(this).next(".event-group");
+        let icon = $(this).find("i");
+
+        eventGroup.slideToggle(); // Show/Hide events
+
+        // Toggle arrow direction
+        if (icon.hasClass("fa-chevron-right")) {
+            icon.removeClass("fa-chevron-right").addClass("fa-chevron-down"); // Change to ▼
+        } else {
+            icon.removeClass("fa-chevron-down").addClass("fa-chevron-right"); // Change to ▶
+        }
+    });
+
 $(".timeline-group[data-date='" + date + "'] .timeline-item").each(function () {
             var eventText = $(this).find("details").text().trim();
             allEvents.push(eventText);
