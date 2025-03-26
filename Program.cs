@@ -1,3 +1,20 @@
+$("details").on("toggle", function () {
+        let timeline = $(this).closest(".timeline");
+        let allDetails = timeline.find("details");
+        let arrowIcon = timeline.find(".toggle-arrow");
+
+        let areAllOpen = allDetails.length > 0 && allDetails.filter(function () {
+            return $(this).prop("open");
+        }).length === allDetails.length;
+
+        if (areAllOpen) {
+            arrowIcon.removeClass("fa-chevron-right").addClass("fa-chevron-down");
+        } else {
+            arrowIcon.removeClass("fa-chevron-down").addClass("fa-chevron-right");
+        }
+    });
+
+
 $(document).ready(function () {
     $(".toggle-timeline").on("click", function () {
         let timeline = $(this).closest(".timeline"); // Get the clicked timeline
