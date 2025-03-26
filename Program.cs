@@ -1,3 +1,28 @@
+$(document).ready(function () {
+    $(".toggle-timeline").on("click", function () {
+        let timeline = $(this).closest(".timeline"); // Get the clicked timeline
+        let eventGroup = timeline.find(".event-group"); // Find events inside this timeline
+        let arrowIcon = $(this).find(".toggle-arrow"); // Find arrow icon inside this timeline
+
+        // Toggle visibility of event group
+        eventGroup.slideToggle();
+
+        // Toggle arrow direction
+        arrowIcon.toggleClass("fa-chevron-right fa-chevron-down");
+
+        // Open/Close all details within this timeline only
+        let allDetails = eventGroup.find("details");
+        let isAnyOpen = allDetails.filter(function () {
+            return $(this).prop("open");
+        }).length > 0;
+
+        if (isAnyOpen) {
+            allDetails.prop("open", false); // Close all events in this timeline
+        } else {
+            allDetails.prop("open", true); // Open all events in this timeline
+        }
+    });
+});
 
 $(".toggle-timeline").on("click", function () {
         let eventGroup = $(this).next(".event-group");
