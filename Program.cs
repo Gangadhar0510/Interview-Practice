@@ -1,3 +1,67 @@
+<div class="card-header">
+    <div class="row">
+        <div class="col-md-2">
+            <form id="recalculateForm">
+                <div>
+                    <textarea class="form-control" id="authorizationIds" name="authorizationIds"
+                        rows="5" cols="30"
+                        placeholder="Enter an authorization ID or list of authorization IDs">
+EXXXX-XXX
+EXXXX-XXX
+                    </textarea>
+                </div>
+
+                <br />
+
+                <div>
+                    <button id="SubmitRecalculateData" type="submit" class="btn btn-primary btn-flat btn-sm margins">
+                        Submit
+                    </button>
+                    <button type="button" id="clearButton" class="btn btn-secondary btn-flat btn-sm m-2">
+                        Clear
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery (required for AJAX) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#recalculateForm").submit(function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            var authorizationIds = $("#authorizationIds").val().trim();
+            if (!authorizationIds) {
+                alert("Please enter at least one authorization ID.");
+                return;
+            }
+
+            $.ajax({
+                url: "/Actions/RecalculateData", // Adjust the URL as needed
+                type: "POST",
+                data: { authorizationIds: authorizationIds },
+                success: function (response) {
+                    alert("Recalculation successful!");
+                },
+                error: function () {
+                    alert("Error while recalculating data.");
+                }
+            });
+        });
+
+        $("#clearButton").click(function () {
+            $("#authorizationIds").val(""); // Clear textarea
+        });
+    });
+</script>
+
+
+
+
 $("details").on("toggle", function () {
         let timeline = $(this).closest(".timeline");
         let allDetails = timeline.find("details");
