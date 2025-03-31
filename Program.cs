@@ -1,3 +1,92 @@
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="duplicateModal" tabindex="-1" aria-labelledby="duplicateModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="duplicateModalLabel">Duplicate Authorization IDs Found</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>The following duplicate authorization IDs were found:</p>
+        <p id="duplicateList" class="text-danger fw-bold"></p>
+        <p>Do you want to proceed with unique values?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" id="confirmProceed">Yes, Proceed</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+$(document).ready(function () {
+    $("#recalculateForm").submit(function (event) {
+        event.preventDefault(); // Prevent default form submission
+
+        var authorizationIds = $("#authorizationIds").val().trim();
+
+        if (!authorizationIds) {
+            ToastrResponseAllMessage("Please enter at least one authorization ID.");
+            return;
+        }
+
+        // Split values by comma and remove empty values
+        let authArray = authorizationIds.split(',').map(id => id.trim()).filter(id => id !== "");
+
+        // Find duplicates
+        let uniqueAuthSet = new Set();
+        let duplicateAuths = [];
+
+        authArray.forEach(id => {
+            if (uniqueAuthSet.has(id)) {
+                duplicateAuths.push(id);
+            } else {
+                uniqueAuthSet.add(id);
+            }
+        });
+
+        // If duplicates found, show Bootstrap modal
+        if (duplicateAuths.length > 0) {
+            $("#duplicateList").text(duplicateAuths.join(', '));
+            $("#duplicateModal").modal("show");
+        } else {
+            sendAjaxRequest([...uniqueAuthSet].join(',')); // No duplicates, proceed directly
+        }
+    });
+
+    // Handle "Yes, Proceed" button click in modal
+    $("#confirmProceed").click(function () {
+        let uniqueAuthArray = [...new Set($("#authorizationIds").val().split(',').map(id => id.trim()).filter(id => id !== ""))];
+        
+        // Update input field with unique values
+        $("#authorizationIds").val(uniqueAuthArray.join(', '));
+
+        // Close the modal
+        $("#duplicateModal").modal("hide");
+
+        // Send AJAX request
+        sendAjaxRequest(uniqueAuthArray.join(', '));
+    });
+
+    function sendAjaxRequest(cleanedAuthorizationIds) {
+        $('#spinner').show();
+
+        $.ajax({
+            url: "/Actions/RecalculateData",
+            type: "POST",
+            data: { authorizationIds: cleanedAuthorizationIds }, 
+            success: function (response) {
+                $('#spinner').hide();
+                ToastrResponseAllMessage("Data recalculated successfully.");
+            },
+            error: function () {
+                $('#spinner').hide();
+                ToastrResponseAllMessage("An error occurred. Please try again.");
+            }
+        });
+    }
+});
+
 $(document).ready(function () {
     // Initialize DataTables for each table
     var tables = {
