@@ -1,3 +1,57 @@
+$(document).ready(function () {
+    // Initialize DataTables for each table
+    var tables = {
+        successTable: $('#successTable').DataTable(),
+        AuthNotExistTable: $('#AuthNotExistTable').DataTable(),
+        failedAuthTable: $('#failedAuthTable').DataTable()
+    };
+
+    // Copy Button Click Event
+    $(document).on('click', '.copy-btn', function () {
+        var tableId = $(this).data('table'); // Get table ID
+        var table = tables[tableId];
+
+        // Get Authorization ID column (assuming it's the first column index 0)
+        var authIds = table.column(0).data().toArray().join('\n');
+
+        // Copy to clipboard
+        var tempInput = $('<textarea>').val(authIds).appendTo('body').select();
+        document.execCommand('copy');
+        tempInput.remove();
+
+        alert('Authorization IDs copied from ' + tableId);
+    });
+
+    // Excel Button Click Event
+    $(document).on('click', '.download-btn', function () {
+        var tableId = $(this).data('table'); // Get table ID
+        var table = tables[tableId];
+
+        var wb = XLSX.utils.book_new();
+        var ws_data = [];
+
+        // Extract headers
+        var headers = [];
+        $('#' + tableId + ' thead th').each(function () {
+            headers.push($(this).text().trim());
+        });
+        ws_data.push(headers);
+
+        // Extract data
+        table.rows().every(function () {
+            ws_data.push(this.data());
+        });
+
+        // Create Worksheet
+        var ws = XLSX.utils.aoa_to_sheet(ws_data);
+        XLSX.utils.book_append_sheet(wb, ws, tableId);
+
+        // Save as Excel File
+        XLSX.writeFile(wb, tableId + '_Data.xlsx');
+    });
+});
+
+
 <div class="card-header">
     <div class="row">
         <div class="col-md-2">
