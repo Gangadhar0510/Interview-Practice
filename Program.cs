@@ -1,3 +1,40 @@
+function throttle(func, delay) {
+    let lastCall = 0;
+    return function (...args) {
+        const now = new Date().getTime();
+        if (now - lastCall >= delay) {
+            lastCall = now;
+            func(...args);
+        }
+    };
+}
+
+function clearAuthorizationFields() {
+    const authId = document.getElementById('authorizationIds');
+    const submitButton = document.getElementById('SubmitRecalculateData');
+
+    if (authId) {
+        authId.value = "";
+        authId.classList.remove('is-valid', 'is-invalid');
+
+        $(".failedResponse").hide();
+        $(".successRespone").hide();
+        $(".authNotExistRespone").hide();
+
+        authId.disabled = false;
+        submitButton.disabled = false;
+
+        authId.removeAttribute("data-original-title");
+        console.log("Clear button clicked and fields reset!");
+    }
+}
+
+// Apply throttling (limit execution to once per 2 seconds)
+const throttledClear = throttle(clearAuthorizationFields, 2000);
+
+$("#clearButton").on('click', throttledClear);
+
+
 <!-- Bootstrap Modal -->
 <div class="modal fade" id="duplicateModal" tabindex="-1" aria-labelledby="duplicateModalLabel" aria-hidden="true">
   <div class="modal-dialog">
