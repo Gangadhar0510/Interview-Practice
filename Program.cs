@@ -1,3 +1,19 @@
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("reconciliationForm");
+    const exportSelect = document.getElementById("ExportProcessName");
+
+    form.addEventListener("submit", function (e) {
+        // Clear previous invalid state
+        exportSelect.classList.remove("is-invalid");
+
+        // Validate
+        if (!exportSelect.value || exportSelect.value === "") {
+            exportSelect.classList.add("is-invalid");
+            e.preventDefault(); // prevent form submission
+        }
+    });
+});
+
 const chartContainer = document.createElement('div');
         chartContainer.className = 'container row';
 
