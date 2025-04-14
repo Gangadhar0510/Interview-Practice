@@ -1,3 +1,48 @@
+<form asp-controller="Reconciliation" asp-action="Index" method="post">
+    <div class="container mt-4">
+        <div class="row g-3 align-items-center">
+
+            <div class="col-md-6 d-flex align-items-center">
+                <label asp-for="ExportProcessName" class="form-label me-2 mb-0" style="white-space: nowrap;">Export Process:</label>
+                <select asp-for="ExportProcessName" class="form-select w-100" name="ExportProcessName">
+                    <option value="">Select</option>
+                    @foreach (dynamic item in Model.ExportProcesses)
+                    {
+                        if (item.Name == Model.ExportProcessName)
+                        {
+                            <option value="@item.Name" title="@item.Name" selected>
+                                @item.Name - @item.ExportProcessDescription
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@item.Name" title="@item.Name">
+                                @item.Name - @item.ExportProcessDescription
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-3 d-flex align-items-center">
+                <label asp-for="ExportFromDate" class="form-label me-2 mb-0">From:</label>
+                <input asp-for="ExportFromDate" type="datetime-local" class="form-control" name="ExportFromDate" />
+            </div>
+
+            <div class="col-md-3 d-flex align-items-center">
+                <label asp-for="ExportToDate" class="form-label me-2 mb-0">To:</label>
+                <input asp-for="ExportToDate" type="datetime-local" class="form-control" name="ExportToDate" />
+            </div>
+
+            <div class="col-md-12 mt-3">
+                <button type="submit" class="btn btn-warning">Show Summary</button>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+
 function throttle(func, delay) {
     let lastCall = 0;
     return function (...args) {
