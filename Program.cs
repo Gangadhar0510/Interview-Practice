@@ -1,3 +1,18 @@
+const chartContainer = document.createElement('div');
+        chartContainer.className = 'container row';
+
+        chartContainer.innerHTML = `
+            <div class="col-md-6">
+                <canvas id="data-canvas1"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="data-canvas2"></canvas>
+            </div>
+        `;
+
+        document.body.appendChild(chartContainer);
+
+
 <form asp-controller="Reconciliation" asp-action="Index" method="post">
     <div class="container mt-4">
         <div class="row g-3 align-items-center">
