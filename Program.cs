@@ -1,3 +1,34 @@
+function validateExportDates() {
+    const fromInput = document.getElementById('ExportFromDate');
+    const toInput = document.getElementById('ExportToDate');
+
+    const fromDate = new Date(fromInput.value);
+    const toDate = new Date(toInput.value);
+
+    // Clear previous states
+    fromInput.classList.remove('is-valid', 'is-invalid');
+    toInput.classList.remove('is-valid', 'is-invalid');
+
+    if (!fromInput.value || !toInput.value || isNaN(fromDate) || isNaN(toDate)) {
+        return; // Skip validation if dates are incomplete
+    }
+
+    if (fromDate >= toDate) {
+        fromInput.classList.add('is-invalid');
+        toInput.classList.add('is-invalid');
+    } else {
+        fromInput.classList.add('is-valid');
+        toInput.classList.add('is-valid');
+    }
+}
+
+// Trigger on input (change, blur, keyup etc.)
+document.getElementById('ExportFromDate').addEventListener('change', validateExportDates);
+document.getElementById('ExportToDate').addEventListener('change', validateExportDates);
+
+
+
+
 General Questions for All ADOs
 Input Format:
 
