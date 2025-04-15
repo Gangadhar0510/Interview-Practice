@@ -1,3 +1,70 @@
+General Questions for All ADOs
+Input Format:
+
+How will the list of cases be provided (CSV upload, textbox input, file import)?
+
+What fields are required for each case (e.g., CaseID, AuthorizationID)?
+
+UI Requirements:
+
+Should each functionality be on a separate page/tab, or all together?
+
+Do users need to see a confirmation screen before execution?
+
+Should users see the results (success/failure) for each case?
+
+Permissions/Security:
+
+Who is authorized to perform these actions?
+
+Should actions be logged (audit trail)?
+
+Error Handling:
+
+What should happen if a case is not found?
+
+Should partial success be allowed?
+
+Specific ADO Questions
+ADO 9416101: Remove cases from ExportFileStaging table
+Is the case identified by CaseID or another field?
+
+Should the case be soft-deleted (e.g., mark as removed) or physically deleted?
+
+Should this action be reversible (e.g., undo option)?
+
+ADO 941616: Remove cases from Export270Header table
+Same questions as 9416101 apply here.
+
+Is there a foreign key relationship we need to be aware of before deleting?
+
+Any dependencies or validations before deletion?
+
+ADO 941619: Update tblAuthorization table – set ReexportY and ManualExportY flags
+Should we set both flags (ReexportY & ManualExportY) to Y, or only update them if currently N?
+
+Are there any business rules on when these flags can be updated (e.g., case must be in a certain status)?
+
+Should changes be timestamped or logged?
+
+ADO 941622: Add cases to exportblockingQueue table
+What fields need to be inserted into this table?
+
+Are we inserting new records or updating existing ones?
+
+Any validations before inserting (e.g., case must not already be in queue)?
+
+Optional Enhancements
+Should there be a summary report or export option after processing?
+
+Do we need a history log screen showing past actions per user?
+
+Let me know if you want help drafting the UI mockup or backend logic too — we can go step by step.
+
+
+    
+
+
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("reconciliationForm");
     const exportSelect = document.getElementById("ExportProcessName");
