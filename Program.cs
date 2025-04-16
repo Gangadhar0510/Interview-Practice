@@ -1,3 +1,50 @@
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>GenAI Dashboard (Simulated)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@3.1.14/dist/browser/signalr.min.js"></script>
+    <script src="~/js/site.js"></script>
+</head>
+<body>
+    <h2>Enter your prompt:</h2>
+    <input type="text" id="queryInput" placeholder="Ask anything..." />
+    <button onclick="submitQuery()">Submit</button>
+
+    <h3>AI Response:</h3>
+    <p id="result">Waiting for response...</p>
+</body>
+</html>
+
+
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/dashboardHub")
+    .build();
+
+connection.on("ReceiveMessage", function (message) {
+    document.getElementById("result").innerText = message;
+});
+
+connection.start().catch(err => console.error(err.toString()));
+
+function submitQuery() {
+    const query = document.getElementById("queryInput").value;
+
+    fetch("/Dashboard/ProcessQuery", {
+        method: "POST",
+        body: JSON.stringify({ userQuery: query }),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+}
+
+
+
 function validateExportDates() {
     const fromInput = document.getElementById('ExportFromDate');
     const toInput = document.getElementById('ExportToDate');
