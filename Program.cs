@@ -1,4 +1,30 @@
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
+public class RawOpenAITest
+{
+    public async Task<string> CallOpenAI(string prompt)
+    {
+        var httpClientHandler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        };
+
+        var httpClient = new HttpClient(httpClientHandler);
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "your_api_key");
+
+        var content = new StringContent($@"{{
+            ""model"": ""text-davinci-003"",
+            ""prompt"": ""{prompt}"",
+            ""max_tokens"": 150
+        }}", System.Text.Encoding.UTF8, "application/json");
+
+        var response = await httpClient.PostAsync("https://api.openai.com/v1/completions", content);
+        return await response.Content.ReadAsStringAsync();
+    }
+}
 
 <div class="col-md-3 d-flex align-items-center fromDate">
     <label asp-for="ExportFromDate" class="form-label me-2 mb-0">From:</label>
