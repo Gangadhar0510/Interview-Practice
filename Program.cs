@@ -1,3 +1,20 @@
+
+<div class="col-md-3">
+    <label asp-for="ExportFromDate" class="form-label">From:</label>
+    <div class="input-group flatpickr">
+        <input asp-for="ExportFromDate" type="text" class="form-control form-control-sm" id="ExportFromDate" name="ExportFromDate" />
+        <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+    </div>
+</div>
+
+<div class="col-md-3 ms-3">
+    <label asp-for="ExportToDate" class="form-label">To:</label>
+    <div class="input-group flatpickr">
+        <input asp-for="ExportToDate" type="text" class="form-control form-control-sm" id="ExportToDate" name="ExportToDate" />
+        <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+    </div>
+</div>
+
 <!-- Flatpickr CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
