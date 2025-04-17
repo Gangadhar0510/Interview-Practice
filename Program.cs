@@ -1,4 +1,12 @@
-
+<div class="col-md-4 mb-3">
+    <label for="ExportFromDate" class="form-label">From DateTime:</label>
+    <div class="input-group" id="datetimepicker1" data-td-target-input="nearest" data-td-target-toggle="nearest">
+        <input asp-for="ExportFromDate" type="text" class="form-control" data-td-target="#datetimepicker1" />
+        <span class="input-group-text" data-td-target="#datetimepicker1" data-td-toggle="datetimepicker">
+            <i class="fa fa-calendar"></i>
+        </span>
+    </div>
+</div>
 
 div 
     
