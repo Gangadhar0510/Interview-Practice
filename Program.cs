@@ -1,3 +1,23 @@
+<!-- MDB CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.1/mdb.min.css" rel="stylesheet" />
+
+<!-- MDB JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.1/mdb.min.js"></script>
+<div class="col-md-2 d-flex align-items-center fromDate">
+    <label asp-for="ExportFromDate" class="form-label me-2 mb-0">From:</label>
+    <input type="text" id="ExportFromDate" class="form-control datetimepicker-input" />
+</div>
+
+<script>
+  // Initialize MDB DateTimePicker
+  const picker = new mdb.Datetimepicker(document.getElementById('ExportFromDate'), {
+    format: 'yyyy-mm-dd hh:ii'
+  });
+</script>
+
+
+
+
 @{
     Layout = null;
 }
