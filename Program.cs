@@ -1,43 +1,22 @@
 
-<div class="col-md-3">
-    <label asp-for="ExportFromDate" class="form-label">From:</label>
-    <div class="input-group flatpickr">
-        <input asp-for="ExportFromDate" type="text" class="form-control form-control-sm" id="ExportFromDate" name="ExportFromDate" />
-        <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+
+div class="row">
+    <div class="col-md-3">
+        <label asp-for="ExportFromDate" class="form-label">From:</label>
+        <div class="position-relative">
+            <input asp-for="ExportFromDate" type="text" class="form-control form-control-sm flatpickr-input pe-5" id="ExportFromDate" name="ExportFromDate" data-input />
+            <i class="fa fa-calendar position-absolute top-50 end-0 translate-middle-y me-3 text-secondary" style="cursor: pointer;" onclick="document.getElementById('ExportFromDate')._flatpickr.open();"></i>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <label asp-for="ExportToDate" class="form-label">To:</label>
+        <div class="position-relative">
+            <input asp-for="ExportToDate" type="text" class="form-control form-control-sm flatpickr-input pe-5" id="ExportToDate" name="ExportToDate" data-input />
+            <i class="fa fa-calendar position-absolute top-50 end-0 translate-middle-y me-3 text-secondary" style="cursor: pointer;" onclick="document.getElementById('ExportToDate')._flatpickr.open();"></i>
+        </div>
     </div>
 </div>
-
-<div class="col-md-3 ms-3">
-    <label asp-for="ExportToDate" class="form-label">To:</label>
-    <div class="input-group flatpickr">
-        <input asp-for="ExportToDate" type="text" class="form-control form-control-sm" id="ExportToDate" name="ExportToDate" />
-        <span class="input-group-text"><i class="fa fa-calendar"></i></span>
-    </div>
-</div>
-
-<!-- Flatpickr CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
-<!-- Flatpickr JS -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<!-- MDB CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.1/mdb.min.css" rel="stylesheet" />
-
-<!-- MDB JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.1/mdb.min.js"></script>
-<div class="col-md-2 d-flex align-items-center fromDate">
-    <label asp-for="ExportFromDate" class="form-label me-2 mb-0">From:</label>
-    <input type="text" id="ExportFromDate" class="form-control datetimepicker-input" />
-</div>
-
-<script>
-  // Initialize MDB DateTimePicker
-  const picker = new mdb.Datetimepicker(document.getElementById('ExportFromDate'), {
-    format: 'yyyy-mm-dd hh:ii'
-  });
-</script>
-
-
 
 
 @{
