@@ -1,23 +1,33 @@
 
 
-div class="row">
-    <div class="col-md-3">
-        <label asp-for="ExportFromDate" class="form-label">From:</label>
-        <div class="position-relative">
-            <input asp-for="ExportFromDate" type="text" class="form-control form-control-sm flatpickr-input pe-5" id="ExportFromDate" name="ExportFromDate" data-input />
-            <i class="fa fa-calendar position-absolute top-50 end-0 translate-middle-y me-3 text-secondary" style="cursor: pointer;" onclick="document.getElementById('ExportFromDate')._flatpickr.open();"></i>
-        </div>
-    </div>
+div 
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.7.4/dist/css/tempus-dominus.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.7.4/dist/js/tempus-dominus.min.js"></script>
 
-    <div class="col-md-3">
-        <label asp-for="ExportToDate" class="form-label">To:</label>
-        <div class="position-relative">
-            <input asp-for="ExportToDate" type="text" class="form-control form-control-sm flatpickr-input pe-5" id="ExportToDate" name="ExportToDate" data-input />
-            <i class="fa fa-calendar position-absolute top-50 end-0 translate-middle-y me-3 text-secondary" style="cursor: pointer;" onclick="document.getElementById('ExportToDate')._flatpickr.open();"></i>
-        </div>
-    </div>
+<div class="input-group" id="datetimepicker1" data-td-target-input="nearest" data-td-target-toggle="nearest">
+    <input id="ExportFromDate" name="ExportFromDate" type="text" class="form-control form-control-sm" data-td-target="#datetimepicker1"/>
+    <span class="input-group-text" data-td-target="#datetimepicker1" data-td-toggle="datetimepicker">
+        <i class="fa fa-calendar"></i>
+    </span>
 </div>
 
+<script>
+    new tempusDominus.TempusDominus(document.getElementById('datetimepicker1'), {
+        display: {
+            components: {
+                calendar: true,
+                date: true,
+                month: true,
+                year: true,
+                decades: true,
+                hours: true,
+                minutes: true,
+                seconds: true
+            }
+        }
+    });
+</script>
 
 @{
     Layout = null;
