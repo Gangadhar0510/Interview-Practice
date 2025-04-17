@@ -1,3 +1,26 @@
+<div class="col-md-3 d-flex align-items-center fromDate">
+    <label asp-for="ExportFromDate" class="form-label me-2 mb-0">From:</label>
+    <div class="input-group date" id="datetimepicker1" data-td-target-input="nearest" data-td-target-toggle="nearest">
+        <input type="text" asp-for="ExportFromDate" class="form-control form-control-sm datetimepicker-input"
+               data-td-target="#datetimepicker1" id="ExportFromDate" />
+        <span class="input-group-text" data-td-target="#datetimepicker1" data-td-toggle="datetimepicker">
+            <i class="fa fa-calendar"></i>
+        </span>
+    </div>
+</div>
+
+<div class="col-md-3 d-flex align-items-center toDate ms-2">
+    <label asp-for="ExportToDate" class="form-label me-2 mb-0">To:</label>
+    <div class="input-group date" id="datetimepicker2" data-td-target-input="nearest" data-td-target-toggle="nearest">
+        <input type="text" asp-for="ExportToDate" class="form-control form-control-sm datetimepicker-input"
+               data-td-target="#datetimepicker2" id="ExportToDate" />
+        <span class="input-group-text" data-td-target="#datetimepicker2" data-td-toggle="datetimepicker">
+            <i class="fa fa-calendar"></i>
+        </span>
+    </div>
+</div>
+
+
 <div class="col-md-4 mb-3">
     <label for="ExportFromDate" class="form-label">From DateTime:</label>
     <div class="input-group" id="datetimepicker1" data-td-target-input="nearest" data-td-target-toggle="nearest">
