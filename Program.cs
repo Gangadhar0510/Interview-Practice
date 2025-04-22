@@ -1,3 +1,29 @@
+
+$(document).on('click', '#errorCategoryEdit', function () {
+    var form = $('#EditErrorCategoryForm');
+    var formData = form.serialize();
+
+    $.ajax({
+        type: 'POST',
+        url: '/Error/Edit',
+        data: formData,
+        headers: {
+            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+        },
+        success: function (response) {
+            if (response.success) {
+                alert(response.message);
+                $('#AssignErrorMain').modal('hide');
+            } else {
+                alert("Failed: " + response.message);
+            }
+        },
+        error: function () {
+            alert("Something went wrong.");
+        }
+    });
+});
+
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
