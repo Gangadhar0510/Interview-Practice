@@ -1,3 +1,39 @@
+
+function setFromDateLimits(toDateStr) {
+  if (!toDateStr) {
+    fromDateInput.min = ''; // or earliest date you allow
+    fromDateInput.max = todayStr;
+    return;
+  }
+  const toDate = new Date(toDateStr);
+  let minFromDate = new Date(toDate);
+  minFromDate.setFullYear(minFromDate.getFullYear() - 2);
+  // Optional: set your earliest allowed date if needed
+
+  fromDateInput.min = minFromDate.toISOString().slice(0, 10);
+  fromDateInput.max = toDateStr;
+
+  // If current FromDate is out of range, clear it
+  if (fromDateInput.value) {
+    const fromDate = new Date(fromDateInput.value);
+    if (fromDate < minFromDate || fromDate > toDate) {
+      fromDateInput.value = '';
+    }
+  }
+}
+
+toDateInput.addEventListener('change', () => {
+  setFromDateLimits(toDateInput.value);
+
+  if (toDateInput.value) {
+    toDateInput.classList.add('is-valid');
+    toDateInput.classList.remove('is-invalid');
+  } else {
+    toDateInput.classList.remove('is-valid');
+  }
+});
+
+
 const fromDateInput = document.getElementById('FromDate');
 const toDateInput = document.getElementById('ToDate');
 const today = new Date();
