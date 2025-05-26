@@ -1,3 +1,93 @@
+const fromDateInput = document.getElementById('FromDate');
+const toDateInput = document.getElementById('ToDate');
+const today = new Date();
+const todayStr = today.toISOString().slice(0, 10);
+
+function formatDateToStr(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function isValidDateInRange(dateStr, minStr, maxStr) {
+  const date = new Date(dateStr);
+  const min = new Date(minStr);
+  const max = new Date(maxStr);
+  return date >= min && date <= max;
+}
+
+function setToDateLimits(fromDateStr) {
+  if (!fromDateStr) return;
+
+  const fromDate = new Date(fromDateStr);
+  let maxToDate = new Date(fromDate);
+  maxToDate.setFullYear(maxToDate.getFullYear() + 2);
+  if (maxToDate > today) maxToDate = today;
+
+  toDateInput.min = fromDateStr;
+  toDateInput.max = formatDateToStr(maxToDate);
+
+  // Reset if existing value is invalid
+  if (toDateInput.value && !isValidDateInRange(toDateInput.value, toDateInput.min, toDateInput.max)) {
+    toDateInput.value = '';
+    toDateInput.classList.remove('is-valid');
+    toDateInput.classList.add('is-invalid');
+  }
+}
+
+function setFromDateLimits(toDateStr) {
+  if (!toDateStr) return;
+
+  const toDate = new Date(toDateStr);
+  let minFromDate = new Date(toDate);
+  minFromDate.setFullYear(minFromDate.getFullYear() - 2);
+
+  fromDateInput.min = formatDateToStr(minFromDate);
+  fromDateInput.max = toDateStr;
+
+  if (fromDateInput.value && !isValidDateInRange(fromDateInput.value, fromDateInput.min, fromDateInput.max)) {
+    fromDateInput.value = '';
+    fromDateInput.classList.remove('is-valid');
+    fromDateInput.classList.add('is-invalid');
+  }
+}
+
+function validateInput(inputElement) {
+  const val = inputElement.value;
+  if (!val || !inputElement.min || !inputElement.max) return;
+
+  if (isValidDateInRange(val, inputElement.min, inputElement.max)) {
+    inputElement.classList.remove('is-invalid');
+    inputElement.classList.add('is-valid');
+  } else {
+    inputElement.value = '';
+    inputElement.classList.remove('is-valid');
+    inputElement.classList.add('is-invalid');
+  }
+}
+
+// Combined listeners for change + input on FromDate
+fromDateInput.addEventListener('change', () => {
+  setToDateLimits(fromDateInput.value);
+  validateInput(fromDateInput);
+});
+
+fromDateInput.addEventListener('input', () => {
+  setToDateLimits(fromDateInput.value);
+  validateInput(fromDateInput);
+});
+
+// Combined listeners for change + input on ToDate
+toDateInput.addEventListener('change', () => {
+  setFromDateLimits(toDateInput.value);
+  validateInput(toDateInput);
+});
+
+toDateInput.addEventListener('input', () => {
+  setFromDateLimits(toDateInput.value);
+  validateInput(toDateInput);
+});
+
+
+
 
 function setFromDateLimits(toDateStr) {
   if (!toDateStr) {
