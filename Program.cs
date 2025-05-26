@@ -1,3 +1,43 @@
+const fromDateInput = document.getElementById('FromDate');
+const toDateInput = document.getElementById('ToDate');
+const today = new Date();
+const todayStr = today.toISOString().slice(0, 10);
+
+function setToDateLimits(fromDateStr) {
+  if (!fromDateStr) {
+    toDateInput.min = '';
+    toDateInput.max = todayStr;
+    return;
+  }
+  const fromDate = new Date(fromDateStr);
+  let maxToDate = new Date(fromDate);
+  maxToDate.setFullYear(maxToDate.getFullYear() + 2);
+  if (maxToDate > today) maxToDate = today;
+
+  toDateInput.min = fromDateStr;
+  toDateInput.max = maxToDate.toISOString().slice(0, 10);
+
+  // If current ToDate is out of range, clear it
+  if (toDateInput.value) {
+    const toDate = new Date(toDateInput.value);
+    if (toDate < fromDate || toDate > maxToDate) {
+      toDateInput.value = '';
+    }
+  }
+}
+
+fromDateInput.addEventListener('change', () => {
+  setToDateLimits(fromDateInput.value);
+
+  // Optional: update validation styles
+  if (fromDateInput.value) {
+    fromDateInput.classList.add('is-valid');
+    fromDateInput.classList.remove('is-invalid');
+  } else {
+    fromDateInput.classList.remove('is-valid');
+  }
+});
+
 
 $(document).on('click', '#errorCategoryEdit', function () {
     var form = $('#EditErrorCategoryForm');
