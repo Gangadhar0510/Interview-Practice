@@ -1,3 +1,33 @@
+
+function exportTableToExcel() {
+    var fromDate = $('#logFromDate').val();
+    var toDate = $('#logToDate').val();
+    var jobName = $('#ParentJobName').val() || "";
+    var errorType = $('#errorType').val();
+
+    $.ajax({
+        url: '/OperationsManager/ExportToExcel',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            fromDate: fromDate,
+            toDate: toDate,
+            jobName: jobName,
+            errorType: errorType
+        }),
+        success: function (response) {
+            if (response.success && response.fileUrl) {
+                // Trigger download
+                window.location.href = response.fileUrl;
+            } else {
+                alert(response.message || "Export failed.");
+            }
+        },
+        error: function (xhr) {
+            alert("An error occurred during export.");
+        }
+    });
+}
 function exportToExcelWithColors() {
   var table = $('#example').DataTable();
 
