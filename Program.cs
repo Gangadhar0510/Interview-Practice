@@ -1,3 +1,25 @@
+$("#OpsMgrTable").on("click", ".message-toggle", function () {
+    var $toggleIcon = $(this);
+    var $short = $toggleIcon.siblings(".message-short");
+    var $long = $toggleIcon.siblings(".message-long");
+
+    if ($long.is(":visible")) {
+        $long.hide();
+        $short.show();
+        $toggleIcon
+            .removeClass("fa-chevron-up")
+            .addClass("fa-chevron-down")
+            .attr("title", "Show more");
+    } else {
+        $short.hide();
+        $long.show();
+        $toggleIcon
+            .removeClass("fa-chevron-down")
+            .addClass("fa-chevron-up")
+            .attr("title", "Show less");
+    }
+});
+
 
 function exportTableToExcel() {
     var fromDate = $('#logFromDate').val();
