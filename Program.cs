@@ -5,6 +5,45 @@ function exportTableToExcel() {
     var jobName = $('#ParentJobName').val() || "";
     var errorType = $('#errorType').val();
 
+    fetch('/OperationsManager/ExportToExcel', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ fromDate, toDate, jobName, errorType })
+    })
+    .then(async response => {
+        const contentType = response.headers.get('Content-Type');
+
+        if (contentType && contentType.includes('application/json')) {
+            // Handle JSON error message
+            const result = await response.json();
+            alert(result.message || 'Export failed.');
+        } else if (contentType && contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+            // Handle file download
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "OperationsManagerLogs.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } else {
+            alert("Unexpected response format.");
+        }
+    })
+    .catch(error => {
+        alert("An error occurred: " + error.message);
+    });
+}
+
+function exportTableToExcel() {
+    var fromDate = $('#logFromDate').val();
+    var toDate = $('#logToDate').val();
+    var jobName = $('#ParentJobName').val() || "";
+    var errorType = $('#errorType').val();
+
     $.ajax({
         url: '/OperationsManager/ExportToExcel',
         type: 'POST',
