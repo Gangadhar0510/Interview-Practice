@@ -1,3 +1,28 @@
+function exportToExcelWithColors() {
+  var table = $('#example').DataTable();
+
+  // Create a new hidden table to export
+  var exportTable = $('<table>');
+
+  // Copy the header
+  var thead = $('<thead>').append($('#example thead').html());
+  exportTable.append(thead);
+
+  // Copy rows with inline background color
+  $('#example tbody tr').each(function () {
+    var $row = $(this).clone();
+    var bgColor = $(this).css('background-color');
+
+    $row.find('td').css('background-color', bgColor);
+    exportTable.append($row);
+  });
+
+  // Use SheetJS (XLSX) to export
+  var wb = XLSX.utils.table_to_book(exportTable[0], {sheet: "Sheet1"});
+  XLSX.writeFile(wb, "ColoredExport.xlsx");
+}
+
+
 const fromDateInput = document.getElementById('FromDate');
 const toDateInput = document.getElementById('ToDate');
 const today = new Date();
