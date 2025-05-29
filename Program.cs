@@ -1,3 +1,35 @@
+const exportFullTextData = {
+  format: {
+    body: function (data, row, column, node) {
+      // If node is defined and has a .message-long span, use that
+      if (node && $(node).find('.message-long').length > 0) {
+        return $(node).find('.message-long').text().trim();
+      }
+
+      // If node exists and has regular text, return it
+      if (node && $(node).text().trim()) {
+        return $(node).text().trim();
+      }
+
+      // If node is missing or hidden (e.g. for hidden columns), fallback to raw data
+      return typeof data === 'string' ? data.trim() : data;
+    }
+  },
+  columns: function (idx, data, node) {
+    // Include 5th and 6th columns (index 4 and 5)
+    if (idx === 4 || idx === 5) return true;
+
+    // Exclude column 1 (index 0)
+    if (idx === 1) return false;
+
+    // Include any visible column
+    return node ? $(node).is(':visible') : false;
+  },
+  modifier: {
+    page: 'all'
+  }
+};
+
 $("#OpsMgrTable").on("click", ".message-toggle", function () {
     var $toggleIcon = $(this);
     var $short = $toggleIcon.siblings(".message-short");
