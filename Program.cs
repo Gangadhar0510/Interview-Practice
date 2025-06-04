@@ -1,3 +1,110 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Hosting;
+using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using Microsoft.ServiceFabric.Services.Runtime;
+
+namespace YourNamespace
+{
+    public class MyStatelessService : StatelessService
+    {
+        public MyStatelessService(StatelessServiceContext context)
+            : base(context)
+        {
+        }
+
+        protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
+        {
+            return new[]
+            {
+                // Give this listener the same name as the endpoint in ServiceManifest.xml ("ServiceEndpoint")
+                new ServiceInstanceListener(serviceContext =>
+                {
+                    // 1) Get the port number from the Service Fabric endpoint named "ServiceEndpoint"
+                    var port = serviceContext.CodePackageActivationContext
+                                             .GetEndpoint("ServiceEndpoint")
+                                             .Port;
+
+                    // 2) Load your certificate however you like. Example: fetch from certificate store.
+                    var cert = GetCertificateFromStore();
+
+                    // 3) Build and return a WebHost that uses Kestrel
+                    return new WebHostBuilder()
+                        .UseKestrel(options =>
+                        {
+#if DEBUG
+                            // In DEBUG, bind only to localhost
+                            options.ListenLocalhost(port, listenOptions =>
+                            {
+                                listenOptions.NoDelay = true;
+                                listenOptions.UseHttps(cert);
+                            });
+#else
+                            // In RELEASE, bind on all IPv6 addresses
+                            options.Listen(IPAddress.IPv6Any, port, listenOptions =>
+                            {
+                                listenOptions.NoDelay = true;
+                                listenOptions.UseHttps(cert);
+                            });
+#endif
+                        })
+                        // 4) If you need the ServiceContext inside your controllers, register it here:
+                        .ConfigureServices(services => services.AddSingleton(serviceContext))
+
+                        // 5) Set the content root to the folder where your service’s DLL lives
+                        .UseContentRoot(Directory.GetCurrentDirectory())
+
+                        // 6) Wire up your usual Startup class
+                        .UseStartup<Startup>()
+
+                        // 7) Integrate with Service Fabric listener
+                        .UseServiceFabricIntegration(
+                            listener: serviceContext, 
+                            ServiceFabricIntegrationOptions.None)
+
+                        // 8) Tell Kestrel which URL(s) it is serving. By convention, Service Fabric uses a URL like "https://+:{port}".
+                        .UseUrls($"https://+:{port}")
+
+                        .Build();
+                }, "ServiceEndpoint") // <-- (the second parameter) must match your endpoint name in ServiceManifest.xml
+            };
+        }
+
+        private X509Certificate2 GetCertificateFromStore()
+        {
+            // Replace with your own certificate‐loading logic. 
+            // For example, search in LocalMachine\My by thumbprint:
+            var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.ReadOnly);
+            try
+            {
+                var certs = store.Certificates.Find(
+                    X509FindType.FindByThumbprint,
+                    "YOUR_CERT_THUMBPRINT_HERE",
+                    validOnly: false);
+
+                if (certs.Count == 0)
+                    throw new Exception("Certificate not found in store.");
+
+                return certs[0];
+            }
+            finally
+            {
+                store.Close();
+            }
+        }
+    }
+}
+
+
+
+
 const exportFullTextData = {
   format: {
     body: function (data, row, column, node) {
