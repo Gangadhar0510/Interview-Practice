@@ -1,3 +1,96 @@
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using Microsoft.ServiceFabric.Services.Runtime;
+using Microsoft.Extensions.Hosting;
+
+namespace YourNamespace
+{
+    public class MyStatelessService : StatelessService
+    {
+        public MyStatelessService(StatelessServiceContext context)
+            : base(context)
+        {
+        }
+
+        protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
+        {
+            return new[]
+            {
+                new ServiceInstanceListener(serviceContext =>
+                {
+                    // Get port from ServiceManifest endpoint
+                    int port = serviceContext.CodePackageActivationContext
+                                             .GetEndpoint("ServiceEndpoint").Port;
+
+                    // HTTPS Certificate
+                    var cert = GetCertificateFromStore();
+
+                    // Create the Kestrel-based communication listener
+                    return new AspNetCoreCommunicationListener("ServiceEndpoint", (url, listener) =>
+                    {
+                        ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
+
+                        return new WebHostBuilder()
+                            .UseKestrel(options =>
+                            {
+#if DEBUG
+                                options.ListenLocalhost(port, listenOptions =>
+                                {
+                                    listenOptions.NoDelay = true;
+                                    listenOptions.UseHttps(cert);
+                                });
+#else
+                                options.Listen(IPAddress.IPv6Any, port, listenOptions =>
+                                {
+                                    listenOptions.NoDelay = true;
+                                    listenOptions.UseHttps(cert);
+                                });
+#endif
+                            })
+                            .ConfigureServices(services => services.AddSingleton(serviceContext))
+                            .UseContentRoot(Directory.GetCurrentDirectory())
+                            .UseStartup<Startup>()
+                            .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
+                            .UseUrls(url)
+                            .Build();
+                    });
+                })
+            };
+        }
+
+        private X509Certificate2 GetCertificateFromStore()
+        {
+            // Replace this with your actual certificate retrieval logic
+            var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.ReadOnly);
+
+            try
+            {
+                var certs = store.Certificates.Find(
+                    X509FindType.FindByThumbprint,
+                    "YOUR_CERT_THUMBPRINT", // Replace with your cert thumbprint
+                    validOnly: false);
+
+                if (certs.Count == 0)
+                    throw new Exception("Certificate not found.");
+
+                return certs[0];
+            }
+            finally
+            {
+                store.Close();
+            }
+        }
+    }
+}
+
 using System;
 using System.Collections.Generic;
 using System.IO;
