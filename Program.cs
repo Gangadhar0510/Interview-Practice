@@ -1,4 +1,82 @@
 
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using Microsoft.ServiceFabric.Services.Runtime;
+using Microsoft.Extensions.Hosting;
+
+public class MyStatelessService : StatelessService
+{
+    public MyStatelessService(StatelessServiceContext context)
+        : base(context) { }
+
+    protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
+    {
+        return new[]
+        {
+            new ServiceInstanceListener(serviceContext =>
+                new AspNetCoreCommunicationListener(
+                    "ServiceEndpoint", // Must match name in ServiceManifest.xml
+                    (url, listener) =>
+                    {
+                        int port = serviceContext.CodePackageActivationContext
+                                                 .GetEndpoint("ServiceEndpoint").Port;
+
+                        var cert = GetCertificateFromStore();
+
+                        return new WebHostBuilder()
+                            .UseKestrel(options =>
+                            {
+#if DEBUG
+                                options.ListenLocalhost(port, listenOptions =>
+                                {
+                                    listenOptions.NoDelay = true;
+                                    listenOptions.UseHttps(cert);
+                                });
+#else
+                                options.Listen(IPAddress.IPv6Any, port, listenOptions =>
+                                {
+                                    listenOptions.NoDelay = true;
+                                    listenOptions.UseHttps(cert);
+                                });
+#endif
+                            })
+                            .ConfigureServices(services => services.AddSingleton(serviceContext))
+                            .UseContentRoot(Directory.GetCurrentDirectory())
+                            .UseStartup<Startup>()
+                            .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
+                            .UseUrls(url)
+                            .Build();
+                    }
+                )
+            )
+        };
+    }
+
+    private X509Certificate2 GetCertificateFromStore()
+    {
+        using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+        {
+            store.Open(OpenFlags.ReadOnly);
+            var certs = store.Certificates.Find(
+                X509FindType.FindByThumbprint,
+                "YOUR_CERT_THUMBPRINT", // Replace with your cert thumbprint
+                validOnly: false);
+
+            if (certs.Count == 0)
+                throw new Exception("Certificate not found.");
+
+            return certs[0];
+        }
+    }
+}
+
 using System;
 using System.Collections.Generic;
 using System.IO;
