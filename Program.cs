@@ -1,3 +1,104 @@
+using Microsoft.Owin;
+using Microsoft.Owin.Security.Cookies;
+using Microsoft.Owin.Security.OpenIdConnect;
+using Owin;
+using System;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+
+[assembly: OwinStartup(typeof(YourNamespace.Startup))]
+namespace YourNamespace
+{
+    public class Startup
+    {
+        public void Configuration(IAppBuilder app)
+        {
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                AuthenticationType = "Cookies"
+            });
+
+            app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions
+            {
+                ClientId = "your-client-id", // Your Okta client ID
+                Authority = "https://cigna.oktapreview.com/oauth2/aus234jasl1bZ5SPZK0hB",
+                RedirectUri = "https://yourapp/signin-oidc",  // Your redirect URI registered with Okta
+                ResponseType = "code",
+                Scope = "openid profile email",
+                AuthenticationType = "OpenIdConnect",
+                UseTokenLifetime = false,
+
+                Notifications = new OpenIdConnectAuthenticationNotifications
+                {
+                    RedirectToIdentityProvider = context =>
+                    {
+                        // Generate PKCE code_verifier
+                        var codeVerifier = GenerateCodeVerifier();
+
+                        // Store code_verifier temporarily in the protocol message state (or session)
+                        context.ProtocolMessage.Parameters.Add("code_challenge_method", "S256");
+
+                        // Generate code_challenge based on verifier
+                        var codeChallenge = GenerateCodeChallenge(codeVerifier);
+
+                        context.ProtocolMessage.Parameters.Add("code_challenge", codeChallenge);
+
+                        // Save code_verifier in AuthenticationProperties so it can be retrieved later
+                        context.OwinContext.Authentication.AuthenticationResponseChallenge.Properties.Dictionary["code_verifier"] = codeVerifier;
+
+                        return Task.CompletedTask;
+                    },
+
+                    AuthorizationCodeReceived = async context =>
+                    {
+                        // Retrieve the code_verifier you saved earlier
+                        string codeVerifier = null;
+                        context.OwinContext.Authentication.AuthenticationResponseChallenge?.Properties?.Dictionary?.TryGetValue("code_verifier", out codeVerifier);
+
+                        // Now you should use the code_verifier in your token request (manual token redemption)
+                        // Default middleware token redemption will NOT send this, so you may need to
+                        // override the token redemption process and do it yourself (e.g., HttpClient to token endpoint)
+
+                        // For now, just complete the task
+                        await Task.CompletedTask;
+                    }
+                }
+            });
+        }
+
+        // Helper to generate a random code verifier string
+        private static string GenerateCodeVerifier()
+        {
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                var bytes = new byte[32];
+                rng.GetBytes(bytes);
+                return Base64UrlEncode(bytes);
+            }
+        }
+
+        // Helper to generate code challenge from verifier (SHA256 + base64url)
+        private static string GenerateCodeChallenge(string codeVerifier)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var bytes = Encoding.ASCII.GetBytes(codeVerifier);
+                var hash = sha256.ComputeHash(bytes);
+                return Base64UrlEncode(hash);
+            }
+        }
+
+        // Base64 URL encode helper (no padding, URL safe)
+        private static string Base64UrlEncode(byte[] input)
+        {
+            return Convert.ToBase64String(input)
+                .Replace("+", "-")
+                .Replace("/", "_")
+                .Replace("=", "");
+        }
+    }
+}
 
 
 using System;
