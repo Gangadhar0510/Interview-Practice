@@ -1,3 +1,19 @@
+public static class ClaimsPrincipalExtensions
+{
+    public static string GetFullName(this ClaimsPrincipal user) =>
+        user.FindFirst("fullName")?.Value ?? "";
+
+    public static string GetEmployeeId(this ClaimsPrincipal user) =>
+        user.FindFirst("employeelD")?.Value ?? "";
+
+    public static string GetTitle(this ClaimsPrincipal user) =>
+        user.FindFirst("title")?.Value ?? "";
+
+    public static string GetDisplayName(this ClaimsPrincipal user) =>
+        user.FindFirst("displayName")?.Value ?? "";
+}
+
+
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OpenIdConnect;
