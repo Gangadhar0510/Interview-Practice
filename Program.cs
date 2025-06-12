@@ -1,3 +1,26 @@
+
+<th>
+  <div class="input-group input-group-sm">
+
+    <!-- Input box -->
+    <input autocomplete="off" type="text" class="form-control searchSuccess" placeholder="Search">
+
+    <!-- Copy Button -->
+    <div class="input-group-append mx-1">
+      <button class="btn btn-sm text-primary copy-btn border" data-table="successTable" data-toggle="tooltip" title="Copy">
+        <i class="fas fa-copy"></i>
+      </button>
+    </div>
+
+    <!-- Download Button -->
+    <div class="input-group-append">
+      <button class="btn btn-sm text-success download-btn border" data-table="successTable" data-toggle="tooltip" title="Download">
+        <i class="fas fa-file-excel"></i>
+      </button>
+    </div>
+
+  </div>
+</th>
 <div class="container-fluid mt-3">
     <div class="row">
         <div class="col-md-12">
