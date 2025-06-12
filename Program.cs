@@ -1,4 +1,23 @@
 
+
+function adjustTickPosition() {
+  const textarea = document.getElementById("authorizationIds");
+  if (!textarea) return;
+
+  const hasScrollbar = textarea.scrollHeight > textarea.clientHeight;
+
+  if (hasScrollbar) {
+    textarea.style.backgroundPosition = "right 2rem center";
+  } else {
+    textarea.style.backgroundPosition = "right 0.75rem center";
+  }
+}
+
+// Call on page load
+adjustTickPosition();
+
+// Call on textarea input (in case content changes dynamically)
+document.getElementById("authorizationIds").addEventListener("input", adjustTickPosition);
 $('#requestExportmain').on('shown.bs.modal', function () {
     let $modal = $(this);
     let $modalDialog = $modal.find('.modal-dialog');
