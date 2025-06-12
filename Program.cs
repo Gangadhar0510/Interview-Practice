@@ -1,3 +1,40 @@
+
+$('#requestExportmain').on('shown.bs.modal', function () {
+    let $modal = $(this);
+    let $modalDialog = $modal.find('.modal-dialog');
+
+    // Find all response blocks inside modal-body
+    let $responseBlocks = $modal.find('.modal-body > div.card-header');
+
+    // Reset all: remove col classes first
+    $responseBlocks.removeClass('col-md-6 col-md-12');
+
+    // Filter only visible blocks
+    let $visibleBlocks = $responseBlocks.filter(function () {
+        return $(this).css('display') !== 'none';
+    });
+
+    let visibleCount = $visibleBlocks.length;
+
+    // Now apply width class based on visible count
+    if (visibleCount === 1) {
+        $visibleBlocks.addClass('col-md-12');
+        $modalDialog.css('max-width', '30%');
+    } else {
+        $visibleBlocks.addClass('col-md-6');
+        $modalDialog.css('max-width', '90%');
+    }
+
+    // Adjust datatables inside this modal
+    setTimeout(function () {
+        $modal.find('table').each(function () {
+            if ($.fn.DataTable.isDataTable(this)) {
+                $(this).DataTable().columns.adjust();
+            }
+        });
+    }, 200);
+});
+
 let $modal = $(this);
     let $modalDialog = $modal.find('.modal-dialog');
 
