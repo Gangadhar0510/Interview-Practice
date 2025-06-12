@@ -1,3 +1,88 @@
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-md-12">
+
+            <!-- TextArea -->
+            <div class="form-group">
+                <label for="authorizationIds">Authorization IDs:</label>
+                <textarea class="form-control" id="authorizationIds" rows="5" placeholder="Enter Authorization IDs here..."></textarea>
+            </div>
+
+            <!-- Table 1 -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    Table 1: Invalid Authorization
+                </div>
+                <div class="card-body">
+                    <table id="invalidAuthTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr><th>Column 1</th><th>Column 2</th></tr>
+                        </thead>
+                        <tbody>
+                            <!-- data rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Table 2 -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    Table 2: Failed Authorization
+                </div>
+                <div class="card-body">
+                    <table id="failedAuthTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr><th>Column 1</th><th>Column 2</th></tr>
+                        </thead>
+                        <tbody>
+                            <!-- data rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Table 3 -->
+            <div class="card mb-3">
+                <div class="card-header bg-warning text-dark">
+                    Table 3: Blocked Authorization
+                </div>
+                <div class="card-body">
+                    <table id="blockedAuthTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr><th>Column 1</th><th>Column 2</th></tr>
+                        </thead>
+                        <tbody>
+                            <!-- data rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Table 4 -->
+            <div class="card mb-3">
+                <div class="card-header bg-danger text-white">
+                    Table 4: Re-Export Authorization
+                </div>
+                <div class="card-body">
+                    <table id="reexportAuthTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr><th>Column 1</th><th>Column 2</th></tr>
+                        </thead>
+                        <tbody>
+                            <!-- data rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
 public static class ClaimsPrincipalExtensions
 {
     public static string GetFullName(this ClaimsPrincipal user) =>
