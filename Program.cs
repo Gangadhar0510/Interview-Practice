@@ -1,4 +1,15 @@
+let $modal = $(this);
+    let $modalDialog = $modal.find('.modal-dialog');
 
+    let visibleCount = $modal.find('.modal-body > div').filter(function () {
+        return $(this).css('display') !== 'none';
+    }).length;
+
+    if (visibleCount === 1) {
+        $modalDialog.css('max-width', '30%');
+    } else {
+        $modalDialog.css('max-width', '90%');
+    }
 <th>
   <div class="input-group input-group-sm">
 
