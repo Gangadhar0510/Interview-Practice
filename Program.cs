@@ -1,3 +1,101 @@
+<div class="container-fluid">
+
+    <!-- Start Form -->
+    <form id="RequestExportForm">
+
+        <!-- First full row: Dropdowns -->
+        <div class="row">
+            <div class="col-md-4">
+                <label for="exportProcess">Export Process:</label>
+                <select class="form-control form-control-sm" id="exportProcess" name="exportProcess">
+                    <option value="">Select Export Process</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label for="caseManagementSystem">Case Management System:</label>
+                <select class="form-control form-control-sm" id="caseManagementSystem" name="caseManagementSystem">
+                    <option value="">Select Case Management System</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label for="environment">Environment:</label>
+                <select class="form-control form-control-sm" id="environment" name="environment">
+                    <option value="">Select Environment</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Second row: Left part of form -->
+        <div class="row mt-3">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>Authorization Ids:</label>
+                    <textarea class="form-control" rows="8"></textarea>
+                </div>
+
+                <div class="spinner-border spinner-border-sm text-primary" id="spinner" role="status" style="display:none"></div>
+
+                <div class="mt-3">
+                    <button id="ClearRequestExport" class="btn btn-secondary btn-sm btn-flat mr-3" type="button">Clear</button>
+                    <button id="SubmitRequestExport" type="submit" class="btn btn-info btn-flat btn-sm">Submit</button>
+                </div>
+            </div>
+
+            <!-- Right part (col-md-9) will be outside form -->
+        </div>
+
+    </form>
+    <!-- End Form -->
+
+    <!-- Now, outside form: Right side tables -->
+    <div class="row">
+        <div class="col-md-3"></div> <!-- Empty space to align with textarea -->
+        <div class="col-md-9">
+
+            <div class="row">
+                <div class="col-md-3 successResponse" style="display:none">
+                    <div class="card">
+                        <div class="card-header bg-success text-white text-center p-1">Success</div>
+                        <div class="card-body p-2">
+                            <table id="successTable" class="table table-sm table-bordered"></table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 authNotExistResponse" style="display:none">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark text-center p-1">Invalid</div>
+                        <div class="card-body p-2">
+                            <table id="AuthNotExistTable" class="table table-sm table-bordered"></table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 failedResponse" style="display:none">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white text-center p-1">Failed</div>
+                        <div class="card-body p-2">
+                            <table id="failedAuthTable" class="table table-sm table-bordered"></table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 blockedResponse" style="display:none">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white text-center p-1">Blocked</div>
+                        <div class="card-body p-2">
+                            <table id="blockedAuthTable" class="table table-sm table-bordered"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
 
 
 function adjustTickPosition() {
