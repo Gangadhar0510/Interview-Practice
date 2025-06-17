@@ -1,4 +1,114 @@
 <div class="container-fluid">
+    <div class="row">
+        <!-- Left Side: Form -->
+        <div class="col-md-4">
+            <form id="RequestExportForm">
+                <!-- Export Process -->
+                <div class="form-group">
+                    <label for="exportProcess">Export Process</label>
+                    <select id="exportProcess" class="form-control">
+                        <option value="">Select Export Process Name</option>
+                        <!-- Add options -->
+                    </select>
+                </div>
+
+                <!-- Case Management System -->
+                <div class="form-group">
+                    <label for="caseManagement">Case Management System</label>
+                    <select id="caseManagement" class="form-control">
+                        <option value="">Select Case Management</option>
+                        <!-- Add options -->
+                    </select>
+                </div>
+
+                <!-- Environment -->
+                <div class="form-group">
+                    <label for="environment">Environment</label>
+                    <select id="environment" class="form-control">
+                        <option value="">Select Environment</option>
+                        <!-- Add options -->
+                    </select>
+                </div>
+
+                <!-- Authorization IDs Textarea -->
+                <div class="form-group">
+                    <label for="authorizationIds">Authorization Ids</label>
+                    <textarea class="form-control" id="authorizationIds" name="authorizationIds"
+                              rows="18" placeholder="Enter an authorization ID or list, e.g. CX-XXX"></textarea>
+                </div>
+
+                <!-- Buttons -->
+                <div class="form-group mt-3 mb-3">
+                    <button type="button" id="ClearRequestExport" class="btn btn-secondary btn-sm mr-2">Clear</button>
+                    <button type="submit" id="SubmitRequestExport" class="btn btn-info btn-sm">Submit</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right Side: Tables -->
+        <div class="col-md-8">
+            <div class="row">
+                <!-- Success Table -->
+                <div class="col-md-6 mb-3">
+                    <div class="card border-success">
+                        <div class="card-header bg-success text-white">Success Authorizations</div>
+                        <div class="card-body p-2">
+                            <input type="text" class="form-control form-control-sm mb-2" placeholder="Search Success Authorizations">
+                            <table id="successTable" class="table table-sm table-striped">
+                                <thead><tr><th>ID</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Invalid Table -->
+                <div class="col-md-6 mb-3">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-white">Invalid Authorizations</div>
+                        <div class="card-body p-2">
+                            <input type="text" class="form-control form-control-sm mb-2" placeholder="Search Invalid Authorizations">
+                            <table id="invalidTable" class="table table-sm table-striped">
+                                <thead><tr><th>ID</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Failed Table -->
+                <div class="col-md-6 mb-3">
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">Failed Authorizations</div>
+                        <div class="card-body p-2">
+                            <input type="text" class="form-control form-control-sm mb-2" placeholder="Search Failed Authorizations">
+                            <table id="failedTable" class="table table-sm table-striped">
+                                <thead><tr><th>ID</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Blocked Table -->
+                <div class="col-md-6 mb-3">
+                    <div class="card border-dark">
+                        <div class="card-header bg-dark text-white">Blocked in Export Override</div>
+                        <div class="card-body p-2">
+                            <input type="text" class="form-control form-control-sm mb-2" placeholder="Search Blocked Authorizations">
+                            <table id="blockedTable" class="table table-sm table-striped">
+                                <thead><tr><th>ID</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- end row -->
+        </div> <!-- end col-md-8 -->
+    </div> <!-- end main row -->
+</div> <!-- end container-fluid -->
+
+<div class="container-fluid">
 
     <!-- Start Form -->
     <form id="RequestExportForm">
