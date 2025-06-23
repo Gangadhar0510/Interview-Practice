@@ -1,3 +1,27 @@
+function scheduleTimers() {
+    if (refreshTimeoutId) clearTimeout(refreshTimeoutId);
+    if (signOutTimeoutId) clearTimeout(signOutTimeoutId);
+
+    const now = new Date().getTime();
+    const idleTime = now - lastActivityTime;
+
+    const timeToIdle = idleLimit - idleTime;
+    const timeToRefresh = tokenRefreshTime - idleTime;
+
+    // 🛑 Don't refresh token if you're within 1 minute of signing out
+    if (timeToRefresh > 0 && timeToIdle > 60 * 1000) {
+        refreshTimeoutId = setTimeout(refreshTokenSilently, timeToRefresh);
+    } else if (idleTime < idleLimit - 60 * 1000) {
+        refreshTokenSilently();
+    }
+
+    if (timeToIdle > 0) {
+        signOutTimeoutId = setTimeout(signOutUser, timeToIdle);
+    } else {
+        signOutUser();
+    }
+}
+
 public class TokenResponseDto
 {
     [JsonPropertyName("access_token")]
