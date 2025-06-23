@@ -1,3 +1,67 @@
+if (isAuthenticated) {
+    let lastActivityTime = new Date().getTime();
+    const idleLimit = 15 * 60 * 1000;         // 15 minutes
+    const tokenRefreshThreshold = 2 * 60 * 1000;  // 2 minutes before expiry
+
+    let tokenExpiresAt = new Date().getTime() + idleLimit; // initial expiry
+    let checkIntervalId = null;
+    let alreadySignedOut = false;
+    let alreadyRefreshed = false;
+
+    // User activity resets idle timer
+    $(document.body).on("mousemove keypress scroll click submit", () => {
+        if (!alreadySignedOut) {
+            lastActivityTime = new Date().getTime();
+        }
+    });
+
+    function refreshTokenSilently() {
+        if (alreadySignedOut || alreadyRefreshed) return;
+
+        alreadyRefreshed = true; // ✅ Prevent repeated refresh within same expiry window
+        fetch('/Account/RefreshToken', { method: 'POST' })
+            .then(response => {
+                if (!response.ok) {
+                    console.warn('Token refresh failed. Signing out...');
+                    signOutUser();
+                } else {
+                    console.log('Token refreshed successfully');
+                    lastActivityTime = new Date().getTime();
+                    tokenExpiresAt = lastActivityTime + idleLimit;
+                    alreadyRefreshed = false; // Allow future refresh before next expiry
+                }
+            })
+            .catch(error => {
+                console.error('Error refreshing token:', error);
+                signOutUser();
+            });
+    }
+
+    function signOutUser() {
+        if (alreadySignedOut) return;
+        alreadySignedOut = true;
+        console.warn("User idle too long. Signing out...");
+        clearInterval(checkIntervalId); // ✅ Stop further checks
+        window.location.href = '/Login/Signout';
+    }
+
+    function checkTimers() {
+        const now = new Date().getTime();
+        const idleTime = now - lastActivityTime;
+        const timeToTokenExpiry = tokenExpiresAt - now;
+
+        if (idleTime >= idleLimit) {
+            signOutUser(); // idle timeout reached
+        } else if (timeToTokenExpiry <= tokenRefreshThreshold) {
+            refreshTokenSilently(); // token about to expire
+        }
+    }
+
+    // ✅ Only one interval, stop after signout
+    checkIntervalId = setInterval(checkTimers, 30 * 1000);
+}
+
+
 function scheduleTimers() {
     if (refreshTimeoutId) clearTimeout(refreshTimeoutId);
     if (signOutTimeoutId) clearTimeout(signOutTimeoutId);
