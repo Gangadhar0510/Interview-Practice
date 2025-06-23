@@ -1,3 +1,153 @@
+<script>
+    var isAuthenticated = '@User.Identity.IsAuthenticated'.toLowerCase() === 'true';
+
+    if (isAuthenticated) {
+        let lastActivityTime = new Date().getTime();
+        const idleLimit = 15 * 60 * 1000;         // 15 minutes in ms
+        const tokenRefreshTime = 14 * 60 * 1000;  // Refresh at 14 minutes
+        let refreshTimeoutId = null;
+        let signOutTimeoutId = null;
+
+        // Reset activity time on user interaction
+        $(document.body).on("mousemove keypress scroll click", () => {
+            lastActivityTime = new Date().getTime();
+            scheduleTimers();
+        });
+
+        function scheduleTimers() {
+            // Clear existing timers
+            if (refreshTimeoutId) clearTimeout(refreshTimeoutId);
+            if (signOutTimeoutId) clearTimeout(signOutTimeoutId);
+
+            const now = new Date().getTime();
+            const idleTime = now - lastActivityTime;
+
+            // Time remaining till idle limit
+            const timeToIdle = idleLimit - idleTime;
+            // Time remaining till token refresh
+            const timeToRefresh = tokenRefreshTime - idleTime;
+
+            if (timeToRefresh > 0) {
+                refreshTimeoutId = setTimeout(() => {
+                    refreshTokenSilently();
+                }, timeToRefresh);
+            } else {
+                // If past refresh time but before idle, refresh now
+                if (idleTime < idleLimit) {
+                    refreshTokenSilently();
+                }
+            }
+
+            if (timeToIdle > 0) {
+                signOutTimeoutId = setTimeout(() => {
+                    signOutUser();
+                }, timeToIdle);
+            } else {
+                // If already idle, sign out now
+                signOutUser();
+            }
+        }
+
+        function refreshTokenSilently() {
+            fetch('/Account/RefreshToken', { method: 'POST' })
+                .then(response => {
+                    if (!response.ok) {
+                        console.warn('Token refresh failed, signing out...');
+                        signOutUser();
+                    } else {
+                        console.log('Token refreshed successfully');
+                        lastActivityTime = new Date().getTime();
+                        scheduleTimers();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error refreshing token:', error);
+                    signOutUser();
+                });
+        }
+
+        function signOutUser() {
+            window.location.href = '/Login/Signout';
+        }
+
+        // Initialize timers on page load
+        scheduleTimers();
+    }
+</script>
+<script>
+    let lastActivityTime = new Date().getTime();
+    const idleLimit = 15 * 60 * 1000;         // 15 minutes in ms
+    const tokenRefreshTime = 14 * 60 * 1000;  // Refresh at 14 minutes
+    let refreshTimeoutId = null;
+    let signOutTimeoutId = null;
+
+    // Reset activity time on user interaction
+    $(document.body).on("mousemove keypress scroll click", () => {
+        lastActivityTime = new Date().getTime();
+        scheduleTimers();
+    });
+
+    function scheduleTimers() {
+        // Clear existing timers
+        if (refreshTimeoutId) clearTimeout(refreshTimeoutId);
+        if (signOutTimeoutId) clearTimeout(signOutTimeoutId);
+
+        const now = new Date().getTime();
+        const idleTime = now - lastActivityTime;
+
+        // Time remaining till idle limit
+        const timeToIdle = idleLimit - idleTime;
+        // Time remaining till token refresh
+        const timeToRefresh = tokenRefreshTime - idleTime;
+
+        if (timeToRefresh > 0) {
+            refreshTimeoutId = setTimeout(() => {
+                refreshTokenSilently();
+            }, timeToRefresh);
+        } else {
+            // If past refresh time but before idle, refresh now
+            if (idleTime < idleLimit) {
+                refreshTokenSilently();
+            }
+        }
+
+        if (timeToIdle > 0) {
+            signOutTimeoutId = setTimeout(() => {
+                signOutUser();
+            }, timeToIdle);
+        } else {
+            // If already idle, sign out now
+            signOutUser();
+        }
+    }
+
+    function refreshTokenSilently() {
+        fetch('/Account/RefreshToken', { method: 'POST' })
+            .then(response => {
+                if (!response.ok) {
+                    console.warn('Token refresh failed, signing out...');
+                    signOutUser();
+                } else {
+                    console.log('Token refreshed successfully');
+                    // Reset last activity to now because user is active
+                    lastActivityTime = new Date().getTime();
+                    scheduleTimers();
+                }
+            })
+            .catch(error => {
+                console.error('Error refreshing token:', error);
+                signOutUser();
+            });
+    }
+
+    function signOutUser() {
+        window.location.href = '/Login/Signout';
+    }
+
+    // Initialize timers on page load
+    scheduleTimers();
+</script>
+
 [HttpPost]
 public async Task<IActionResult> RefreshToken()
 {
