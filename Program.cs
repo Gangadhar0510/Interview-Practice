@@ -1,5 +1,89 @@
 if (isAuthenticated) {
     let lastActivityTime = new Date().getTime();
+    const idleLimit = 15 * 60 * 1000;               // 15 min idle timeout
+    const tokenRefreshThreshold = 2 * 60 * 1000;    // Refresh token if 2 min left
+
+    let tokenExpiresAt = new Date().getTime() + idleLimit; // Assume 15 min token expiry
+    let alreadySignedOut = false;
+    let alreadyRefreshed = false;
+
+    // 💡 Clear any existing interval to avoid duplication (e.g. partial reloads)
+    if (window.userIdleCheckTimer) {
+        clearInterval(window.userIdleCheckTimer);
+    }
+
+    // 🔁 Track user activity
+    $(document.body).on("mousemove keypress scroll click submit", () => {
+        if (!alreadySignedOut) {
+            lastActivityTime = new Date().getTime();
+        }
+    });
+
+    function refreshTokenSilently() {
+        if (alreadySignedOut || alreadyRefreshed) return;
+
+        alreadyRefreshed = true;
+
+        fetch('/Account/RefreshToken', { method: 'POST' })
+            .then(response => {
+                if (!response.ok) {
+                    console.warn('Token refresh failed. Signing out...');
+                    signOutUser();
+                } else {
+                    console.log('✅ Token refreshed');
+                    tokenExpiresAt = new Date().getTime() + idleLimit;
+                    alreadyRefreshed = false; // Allow another refresh when next near expiry
+                }
+            })
+            .catch(error => {
+                console.error('⚠️ Refresh error:', error);
+                signOutUser();
+            });
+    }
+
+    function signOutUser() {
+        if (alreadySignedOut) return;
+
+        alreadySignedOut = true;
+
+        // 🛑 Clear interval so no future checks run
+        if (window.userIdleCheckTimer) {
+            clearInterval(window.userIdleCheckTimer);
+            window.userIdleCheckTimer = null;
+        }
+
+        console.warn('🔒 Signing out user due to inactivity');
+        window.location.href = '/Login/Signout';
+    }
+
+    function checkTimers() {
+        const now = new Date().getTime();
+        const idleTime = now - lastActivityTime;
+        const timeToTokenExpiry = tokenExpiresAt - now;
+
+        console.log({
+            now: new Date().toLocaleTimeString(),
+            idleTime: (idleTime / 1000).toFixed(1) + 's',
+            timeToTokenExpiry: (timeToTokenExpiry / 1000).toFixed(1) + 's',
+            alreadyRefreshed,
+        });
+
+        // ❌ Sign out if user has been idle for 15 minutes
+        if (idleTime >= idleLimit) {
+            signOutUser();
+        }
+
+        // ✅ If user is active AND token is about to expire, refresh it
+        else if (timeToTokenExpiry <= tokenRefreshThreshold) {
+            refreshTokenSilently();
+        }
+    }
+
+    // ✅ Start checking every 30 seconds
+    window.userIdleCheckTimer = setInterval(checkTimers, 30 * 1000);
+}
+if (isAuthenticated) {
+    let lastActivityTime = new Date().getTime();
     const idleLimit = 15 * 60 * 1000;         // 15 minutes
     const tokenRefreshThreshold = 2 * 60 * 1000;  // 2 minutes before expiry
 
