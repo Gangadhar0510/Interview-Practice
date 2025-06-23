@@ -1,3 +1,88 @@
+[HttpPost]
+public async Task<IActionResult> RefreshToken()
+{
+    var refreshToken = await HttpContext.GetTokenAsync("refresh_token");
+
+    if (string.IsNullOrEmpty(refreshToken))
+        return Unauthorized();
+
+    var client = new HttpClient();
+    var parameters = new Dictionary<string, string>
+    {
+        {"grant_type", "refresh_token"},
+        {"refresh_token", refreshToken},
+        {"client_id", "your-client-id"},
+        {"client_secret", "your-client-secret"},
+    };
+
+    var request = new HttpRequestMessage(HttpMethod.Post, "https://cigna.oktapreview.com/oauth2/aus234jasllbZ5PZK@h8/v1/token")
+    {
+        Content = new FormUrlEncodedContent(parameters)
+    };
+
+    var response = await client.SendAsync(request);
+    if (!response.IsSuccessStatusCode)
+        return Unauthorized();
+
+    var tokenResponse = await response.Content.ReadFromJsonAsync<OAuthTokenResponse>();
+
+    // Save new tokens (manual, depends on how you're storing them)
+    var authInfo = await HttpContext.AuthenticateAsync();
+    authInfo.Properties.UpdateTokenValue("access_token", tokenResponse.AccessToken);
+    authInfo.Properties.UpdateTokenValue("refresh_token", tokenResponse.RefreshToken);
+    authInfo.Properties.UpdateTokenValue("expires_at", DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn).ToString("o"));
+
+    await HttpContext.SignInAsync(authInfo.Principal, authInfo.Properties);
+    return Ok();
+}
+
+
+<script>
+    let lastActivityTime = new Date().getTime();
+    const idleLimit = 15 * 60 * 1000; // 15 minutes
+    const tokenRefreshThreshold = 13 * 60 * 1000; // Refresh at 13 minutes
+
+    // Track user activity
+    $(document.body).on("mousemove keypress", function () {
+        lastActivityTime = new Date().getTime();
+    });
+
+    function checkInactivity() {
+        const now = new Date().getTime();
+        const idleTime = now - lastActivityTime;
+
+        if (idleTime >= idleLimit) {
+            // Idle for 15 min — logout
+            window.location.href = '/Login/Signout';
+        } else if (idleTime < 2 * 60 * 1000) {
+            // User is active — try refreshing token before expiry
+            refreshTokenSilently();
+        }
+
+        // Recheck after 1 minute
+        setTimeout(checkInactivity, 60 * 1000);
+    }
+
+    function refreshTokenSilently() {
+        fetch('/Account/RefreshToken', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (!response.ok) {
+                console.warn('Token refresh failed');
+            }
+        }).catch(error => {
+            console.error('Error refreshing token:', error);
+        });
+    }
+
+    // Start checking after page load
+    setTimeout(checkInactivity, 60 * 1000);
+</script>
+
+
 <div class="container-fluid">
     <!-- FORM START -->
     <form id="RequestExportForm">
