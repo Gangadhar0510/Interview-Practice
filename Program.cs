@@ -1,3 +1,63 @@
+services.AddAuthentication(options =>
+{
+    options.DefaultScheme  = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddOpenIdConnect(options =>
+{
+    // … your Authority, ClientId, etc. …
+    options.SaveTokens = true;
+
+    options.Events = new OpenIdConnectEvents
+    {
+        OnRedirectToIdentityProviderForSignOut = context =>
+        {
+            // 1️⃣ Try to get the expires_at value you saved in the auth properties
+            var expiresAt = context.Properties.GetTokenValue("expires_at");
+            if (!string.IsNullOrEmpty(expiresAt) &&
+                DateTimeOffset.TryParse(expiresAt, out var expiryTime))
+            {
+                // 2️⃣ If it's already in the past, skip remote logout
+                if (expiryTime < DateTimeOffset.UtcNow)
+                {
+                    context.HandleResponse();                       // Stop the OIDC middleware
+                    context.Response.Redirect("/Home/Index");       // Send them home
+                    return Task.CompletedTask;
+                }
+            }
+
+            // 3️⃣ Otherwise, build the normal logout redirect to Okta
+            var idToken = context.Properties.GetTokenValue("id_token");
+            if (!string.IsNullOrEmpty(idToken))
+            {
+                context.ProtocolMessage.IdTokenHint = idToken;
+            }
+
+            // Ensure your post-logout URI is set
+            context.ProtocolMessage.PostLogoutRedirectUri =
+                context.Properties.RedirectUri
+                ?? context.Request.Scheme + "://" + context.Request.Host + "/Home/Index";
+
+            return Task.CompletedTask;
+        },
+
+        OnRemoteFailure = ctx =>
+        {
+            ctx.HandleResponse();
+            ctx.Response.Redirect("/Home/Index");
+            return Task.CompletedTask;
+        },
+        OnAuthenticationFailed = ctx =>
+        {
+            ctx.HandleResponse();
+            ctx.Response.Redirect("/Home/Index");
+            return Task.CompletedTask;
+        }
+    };
+});
+
+
 if (isAuthenticated) {
     let lastActivityTime = new Date().getTime();
     const idleLimit = 15 * 60 * 1000;               // 15 min idle timeout
