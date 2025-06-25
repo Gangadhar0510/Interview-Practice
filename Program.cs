@@ -1,3 +1,33 @@
+<span id="session-timer"></span>
+
+<script>
+    // Set session timeout to 15 minutes (900 seconds)
+    const sessionTimeoutMinutes = 15;
+    const sessionExpiresAt = new Date().getTime() + sessionTimeoutMinutes * 60 * 1000;
+
+    function updateSessionTimer() {
+        const now = new Date().getTime();
+        const timeLeft = Math.floor((sessionExpiresAt - now) / 1000); // in seconds
+
+        if (timeLeft <= 0) {
+            document.getElementById("session-timer").innerText = "Session expired";
+            clearInterval(sessionTimer);
+            // Optional: log out the user automatically
+            // window.location.href = '/Login/SignOut';
+            return;
+        }
+
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+
+        document.getElementById("session-timer").innerText =
+            `Session ends in ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    updateSessionTimer(); // Initial call
+    const sessionTimer = setInterval(updateSessionTimer, 1000); // Update every second
+</script>
+
 Subject: Request for Work From Home – July to September
 
 Dear [Manager's Name],
