@@ -1,3 +1,33 @@
+Subject: Request for Work From Home – July to September
+
+Dear [Manager's Name],
+
+I would like to request approval to work from home from July through September, as my wife will be entering her third trimester starting July 1st and has been advised complete bed rest. We also have a one-year-old child at home, and my support during this period is essential.
+
+I am confident that I can manage my responsibilities effectively without any impact on deliverables or productivity. I will remain fully available during working hours and ensure all commitments are met.
+
+Thank you for your consideration and support.
+
+Kind regards,
+[Your Name]
+
+Let me know if you'd like to add medical note availability, backup coverage details, or align it to your company’s tone or policy.
+
+
+
+
+
+
+
+
+
+
+
+Tools
+
+
+
+
 services.AddAuthentication(options =>
 {
     options.DefaultScheme  = CookieAuthenticationDefaults.AuthenticationScheme;
