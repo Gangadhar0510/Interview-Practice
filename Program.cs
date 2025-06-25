@@ -1,4 +1,28 @@
-<span id="session-timer"></span>
+
+
+<div class="user-panel mt-3 pb-3 mb-3 d-flex align-items-center">
+    <!-- Circle with initials -->
+    <span class="d-flex justify-content-center align-items-center mr-2"
+          style="
+            width: 43px;
+            height: 43px;
+            border-radius: 50%;
+            background-color: rgb(136, 23, 152);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+          ">
+        AK
+    </span>
+
+    <!-- User info and Sign Out -->
+    <div class="info">
+        <span class="text-white">
+            <b>Gangadhar</b>
+            <a class="text-primary ml-3" href="/Login/SignOut">Sign Out</a>
+        </span>
+    </div>
+</div><span id="session-timer"></span>
 
 <script>
     // Set session timeout to 15 minutes (900 seconds)
