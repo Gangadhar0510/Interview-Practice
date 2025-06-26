@@ -1,4 +1,14 @@
+OnTokenValidated = context =>
+        {
+            var identity = (ClaimsIdentity)context.Principal.Identity;
+            var roleClaim = identity.FindFirst("RoleClaimType");
+            if (roleClaim != null)
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Role, roleClaim.Value));
+            }
 
+            return Task.CompletedTask;
+}
 
 <div class="user-panel mt-3 pb-3 mb-3 d-flex align-items-center">
     <!-- Circle with initials -->
