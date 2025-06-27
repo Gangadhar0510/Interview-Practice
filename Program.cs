@@ -1,3 +1,7 @@
+<div class="sidebar-footer text-center p-2 text-white" style="background-color: #2c2f33;">
+        &copy; 2025 Your Company
+    </div>
+
 OnTokenValidated = context =>
         {
             var identity = (ClaimsIdentity)context.Principal.Identity;
