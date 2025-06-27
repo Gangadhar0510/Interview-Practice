@@ -1,3 +1,105 @@
+<script>
+if (isAuthenticated) {
+    const sessionTimerLabel = document.getElementById("session-timer");
+
+    const idleLimit = 15 * 60 * 1000; // 15 mins
+    const refreshThreshold = 2 * 60 * 1000; // 2 mins
+
+    let lastActivityTime = new Date().getTime();
+    let sessionExpiresAt = tokenExpiresAtUTC
+        ? new Date(tokenExpiresAtUTC).getTime()
+        : new Date().getTime() + idleLimit;
+
+    let alreadyRefreshed = false;
+    let alreadySignedOut = false;
+
+    // Event: Track activity
+    document.body.addEventListener("mousemove", resetActivityTimer);
+    document.body.addEventListener("keypress", resetActivityTimer);
+    document.body.addEventListener("scroll", resetActivityTimer);
+    document.body.addEventListener("click", resetActivityTimer);
+
+    function resetActivityTimer() {
+        if (!alreadySignedOut) {
+            lastActivityTime = new Date().getTime();
+        }
+    }
+
+    function updateSessionTimer() {
+        const now = new Date().getTime();
+        const timeLeft = Math.floor((sessionExpiresAt - now) / 1000); // seconds
+
+        if (timeLeft <= 0) {
+            sessionTimerLabel.innerText = "Session expired";
+            sessionTimerLabel.style.color = "red";
+            clearInterval(sessionTimer);
+            signOutUser();
+            return;
+        }
+
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+
+        sessionTimerLabel.innerText =
+            `Session ends in ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        sessionTimerLabel.style.color = timeLeft <= 120 ? "red" : "";
+    }
+
+    function checkIdleAndRefresh() {
+        const now = new Date().getTime();
+        const idleTime = now - lastActivityTime;
+        const timeToExpiry = sessionExpiresAt - now;
+
+        if (idleTime >= idleLimit) {
+            signOutUser();
+        } else if (timeToExpiry <= refreshThreshold && !alreadyRefreshed) {
+            refreshToken();
+        }
+    }
+
+    function refreshToken() {
+        alreadyRefreshed = true;
+
+        fetch('/Account/RefreshToken', { method: 'POST' })
+            .then(response => {
+                if (!response.ok) {
+                    console.warn("❌ Token refresh failed");
+                    signOutUser();
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.expires_at) {
+                    sessionExpiresAt = new Date(data.expires_at).getTime();
+                    alreadyRefreshed = false; // Allow next refresh when needed
+                    console.log("✅ Token refreshed, new expiry:", data.expires_at);
+                }
+            })
+            .catch(error => {
+                console.error("Refresh error:", error);
+                signOutUser();
+            });
+    }
+
+    function signOutUser() {
+        if (alreadySignedOut) return;
+        alreadySignedOut = true;
+
+        clearInterval(sessionTimer);
+        clearInterval(sessionManagerCheck);
+        window.location.href = '/Login/SignOut';
+    }
+
+    // Start
+    updateSessionTimer();
+    const sessionTimer = setInterval(updateSessionTimer, 1000); // every second
+    const sessionManagerCheck = setInterval(checkIdleAndRefresh, 30 * 1000); // every 30s
+}
+</script>
+
+
+
 <div class="sidebar-footer text-center p-2 text-white" style="background-color: #2c2f33;">
         &copy; 2025 Your Company
     </div>
