@@ -1,3 +1,46 @@
+let isInternalNav = false;
+let isRefreshing = false;
+
+// Detect internal links
+document.addEventListener("click", (e) => {
+  const anchor = e.target.closest("a");
+  if (anchor) {
+    isInternalNav = true;
+  }
+});
+
+// Detect refresh
+window.addEventListener("keydown", (e) => {
+  if (e.key === "F5" || (e.ctrlKey && e.key.toLowerCase() === "r")) {
+    isRefreshing = true;
+  }
+});
+
+// pagehide is best for tab close detection
+window.addEventListener("pagehide", function (event) {
+  const isTabClose =
+    !isInternalNav &&
+    !isRefreshing &&
+    document.visibilityState === "hidden" &&
+    !event.persisted;
+
+  if (isTabClose) {
+    console.log("✅ Detected tab close");
+
+    // Clear session
+    sessionStorage.clear();
+
+    // Logout from Okta (optional)
+    const idToken = sessionStorage.getItem("id_token");
+    if (idToken) {
+      navigator.sendBeacon(
+        `https://your-okta-domain.okta.com/oauth2/default/v1/logout?id_token_hint=${idToken}&post_logout_redirect_uri=${window.location.origin}`
+      );
+    }
+  }
+});
+
+
 <script>
 if (isAuthenticated) {
     const sessionTimerLabel = document.getElementById("session-timer");
