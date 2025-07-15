@@ -1,3 +1,8 @@
+
+const navType = performance.getEntriesByType("navigation")[0]?.type;
+  if (navType === "reload") {
+    sessionStorage.setItem("isRefreshing", "true");
+  }
 let isInternalNav = false;
 let isRefreshing = false;
 
