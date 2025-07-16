@@ -1,4 +1,52 @@
 <script>
+  // On page load — initialize nav flags
+  sessionStorage.setItem("navType", "initial");
+
+  // If user clicked an internal link
+  document.addEventListener("click", function (e) {
+    const anchor = e.target.closest("a");
+    if (anchor && anchor.href && anchor.origin === location.origin) {
+      sessionStorage.setItem("navType", "internal");
+    }
+  });
+
+  // If user presses back/forward
+  window.addEventListener("popstate", function () {
+    sessionStorage.setItem("navType", "internal");
+  });
+
+  // If user refreshes (F5, Ctrl+R, typing URL), set flag at load time
+  // This executes BEFORE unload on next page
+  window.addEventListener("load", function () {
+    sessionStorage.setItem("wasReload", "false");
+
+    if (performance.navigation.type === 1 || performance.getEntriesByType("navigation")[0]?.type === "reload") {
+      sessionStorage.setItem("wasReload", "true");
+    }
+  });
+
+  // Finally: Handle unload
+  window.addEventListener("beforeunload", function () {
+    const wasInternal = sessionStorage.getItem("navType") === "internal";
+    const wasReload = sessionStorage.getItem("wasReload") === "true";
+
+    if (!wasInternal && !wasReload) {
+      console.log("✅ Tab or browser close detected. Logging out...");
+      navigator.sendBeacon("/Account/Logout");
+    } else {
+      console.log("❌ Not a tab close. No logout.");
+    }
+
+    // Reset for future page
+    sessionStorage.setItem("navType", "initial");
+    sessionStorage.setItem("wasReload", "false");
+  });
+</script>
+
+
+
+
+<script>
   // Step 1: Mark all non-tab-close actions
   sessionStorage.setItem("navType", "initial");
 
@@ -34,6 +82,8 @@
     // Reset for next time
     sessionStorage.setItem("navType", "initial");
   });
+
+
 </script>
 
 <script>
