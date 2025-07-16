@@ -1,4 +1,36 @@
 
+<script>
+  let isInternalNav = false;
+
+  // Detect internal navigation (clicking links)
+  document.addEventListener("click", function (e) {
+    const anchor = e.target.closest("a");
+    if (anchor && anchor.href && anchor.origin === location.origin) {
+      isInternalNav = true;
+    }
+  });
+
+  // Detect programmatic navigation (optional if using pushState)
+  window.addEventListener("popstate", function () {
+    isInternalNav = true;
+  });
+
+  // Detect tab close vs refresh
+  window.addEventListener("beforeunload", function (e) {
+    // Check if it's a page reload
+    const navEntries = performance.getEntriesByType("navigation");
+    const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
+
+    if (!isInternalNav && !isReload) {
+      // Only fire logout on tab close / browser close
+      navigator.sendBeacon("/Account/Logout");
+    }
+
+    // Reset navigation flag
+    isInternalNav = false;
+  });
+</script>
+
 const navType = performance.getEntriesByType("navigation")[0]?.type;
   if (navType === "reload") {
     sessionStorage.setItem("isRefreshing", "true");
