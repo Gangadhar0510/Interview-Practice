@@ -1,3 +1,40 @@
+<script>
+  // Step 1: Mark all non-tab-close actions
+  sessionStorage.setItem("navType", "initial");
+
+  // 1. Internal link clicks (same-origin)
+  document.addEventListener("click", function (e) {
+    const anchor = e.target.closest("a");
+    if (anchor && anchor.href && anchor.origin === location.origin) {
+      sessionStorage.setItem("navType", "internal-nav");
+    }
+  });
+
+  // 2. Back/forward browser buttons (SPA/history API)
+  window.addEventListener("popstate", function () {
+    sessionStorage.setItem("navType", "internal-nav");
+  });
+
+  // 3. On unload
+  window.addEventListener("beforeunload", function () {
+    const navEntry = performance.getEntriesByType("navigation")[0];
+    const navType = navEntry?.type; // "navigate", "reload", etc.
+
+    const isInternalNav = sessionStorage.getItem("navType") === "internal-nav";
+    const isReload = navType === "reload";
+
+    // ✅ Only logout if it's NOT internal nav and NOT reload
+    if (!isInternalNav && !isReload) {
+      console.log("✅ Tab/browser close detected. Logging out...");
+      navigator.sendBeacon("/Account/Logout");
+    } else {
+      console.log("❌ Refresh or internal nav — no logout.");
+    }
+
+    // Reset for next time
+    sessionStorage.setItem("navType", "initial");
+  });
+</script>
 
 <script>
   let isInternalNav = false;
