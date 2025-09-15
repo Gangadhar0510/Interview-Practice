@@ -1,3 +1,23 @@
+<a href="mailto:kalladurgam@evicore.com" class="dropdown-item card bg-light d-flex flex-fill p-3 text-decoration-none text-dark">
+  <div class="media">
+    <div class="epExportManagerImage" data-toggle="tooltip" data-placement="top" data-html="true" title="Karthikeyan Alladurgam">
+      <span>AK</span>
+    </div>
+    <div class="media-body ml-3">
+      <h3 class="dropdown-item-title text-muted pb-2">Exports Manager</h3>
+      <p class="text-lg">Karthikeyan Alladurgam</p>
+      <p class="text-muted text-sm"><b>When to contact: </b>If you need immediate attention.</p>
+      <ul class="ml-4 mb-0 fa-ul text-muted pt-1">
+        <li class="small">
+          <span class="fa-li"><i class="fas fa-lg fa-envelope"></i></span>
+          Email: kalladurgam@evicore.com
+        </li>
+      </ul>
+    </div>
+  </div>
+</a>
+
+
 <script>
   // On page load — initialize nav flags
   sessionStorage.setItem("navType", "initial");
@@ -6884,3 +6904,4 @@ namespace Singleton_Pattern
         }
     }
 }
+
