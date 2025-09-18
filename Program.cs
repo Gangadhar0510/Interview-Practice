@@ -1,3 +1,16 @@
+
+<!-- Refresh Button -->
+<button type="button" class="btn btn-outline-primary btn-sm" data-toggle="tooltip" data-placement="top"
+        title="Click to refresh the dashboard">
+    <i class="fas fa-sync-alt"></i> Last Refresh
+</button>
+
+<!-- Razor Date -->
+<span class="ml-2 text-muted">
+    @DateTime.Now.ToString("MMM dd yyyy hh:mm tt")
+</span>
+
+
 <a href="mailto:kalladurgam@evicore.com" class="dropdown-item card bg-light d-flex flex-fill p-3 text-decoration-none text-dark">
   <div class="media">
     <div class="epExportManagerImage" data-toggle="tooltip" data-placement="top" data-html="true" title="Karthikeyan Alladurgam">
@@ -6904,4 +6917,5 @@ namespace Singleton_Pattern
         }
     }
 }
+
 
