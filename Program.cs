@@ -1,3 +1,28 @@
+<script>
+    // enable tooltip (Bootstrap)
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    });
+
+    // Function to update the refresh time
+    function updateRefreshTime() {
+        const now = new Date();
+        const formatted = now.toLocaleString('en-US', {
+            month: 'short', day: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
+        document.getElementById("lastRefreshTime").textContent = formatted;
+
+        // here you can also trigger AJAX call to refresh dashboard data
+        // e.g., $.get("/Dashboard/GetData", function(data) { ... });
+    }
+
+    // Manual refresh button
+    document.getElementById("refreshBtn").addEventListener("click", updateRefreshTime);
+
+    // Auto refresh every 5 minutes (300000 ms)
+    setInterval(updateRefreshTime, 300000);
+</script>
 
 <!-- Refresh Button -->
 <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="tooltip" data-placement="top"
@@ -6917,5 +6942,6 @@ namespace Singleton_Pattern
         }
     }
 }
+
 
 
