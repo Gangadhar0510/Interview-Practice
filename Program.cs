@@ -1,10 +1,32 @@
+
+<div class="d-flex align-items-center mb-3">
+    <!-- Refresh Button -->
+    <button type="button" id="refreshBtn"
+            class="btn btn-outline-primary btn-sm"
+            data-toggle="tooltip" data-placement="top"
+            title="Click to refresh the dashboard, or it will automatically refresh every 5 minutes">
+        <i class="fas fa-sync-alt"></i> Refresh Dashboard
+    </button>
+
+    <!-- Last Refresh Time -->
+    <span id="lastRefreshTime" class="ml-2 text-muted">
+        @DateTime.Now.ToString("MMM dd yyyy hh:mm tt")
+    </span>
+</div>
+
+<!-- Dashboard Data -->
+<div id="dashboardData">
+    @* initial data render here *@
+    <p>Loading dashboard data...</p>
+</div>
+
 <script>
-    // enable tooltip (Bootstrap)
+    // Enable tooltip (Bootstrap)
     $(function () {
         $('[data-toggle="tooltip"]').tooltip()
     });
 
-    // Function to update the refresh time
+    // Function to update last refresh time
     function updateRefreshTime() {
         const now = new Date();
         const formatted = now.toLocaleString('en-US', {
@@ -12,17 +34,33 @@
             hour: '2-digit', minute: '2-digit', second: '2-digit'
         });
         document.getElementById("lastRefreshTime").textContent = formatted;
+    }
 
-        // here you can also trigger AJAX call to refresh dashboard data
-        // e.g., $.get("/Dashboard/GetData", function(data) { ... });
+    // Function to load dashboard data
+    function loadDashboardData() {
+        $.ajax({
+            url: '/Dashboard/GetData',   // 👈 Your controller action
+            type: 'GET',
+            success: function (data) {
+                $("#dashboardData").html(data); // replace div content
+                updateRefreshTime();
+            },
+            error: function () {
+                $("#dashboardData").html("<p class='text-danger'>Failed to load dashboard data.</p>");
+            }
+        });
     }
 
     // Manual refresh button
-    document.getElementById("refreshBtn").addEventListener("click", updateRefreshTime);
+    document.getElementById("refreshBtn").addEventListener("click", loadDashboardData);
 
-    // Auto refresh every 5 minutes (300000 ms)
-    setInterval(updateRefreshTime, 300000);
+    // Auto refresh every 5 minutes
+    setInterval(loadDashboardData, 300000);
+
+    // Initial load
+    loadDashboardData();
 </script>
+
 
 <!-- Refresh Button -->
 <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="tooltip" data-placement="top"
@@ -6942,6 +6980,7 @@ namespace Singleton_Pattern
         }
     }
 }
+
 
 
 
