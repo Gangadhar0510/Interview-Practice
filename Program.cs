@@ -1,3 +1,23 @@
+
+<div class="card-tools d-flex align-items-center">
+    <!-- Refresh Button -->
+    <a id="refreshBtn" 
+       class="btn btn-outline-primary btn-sm mr-2" 
+       data-toggle="tooltip" 
+       data-placement="auto" 
+       title="Click to refresh the dashboard or it will refresh every 5 sec">
+        <i class="fas fa-sync-alt"></i>
+    </a>
+
+    <!-- Last Refresh Time -->
+    <div class="d-flex align-items-center">
+        <i class="fas fa-clock mr-1"></i>
+        <span id="LastRefreshTime">--:--</span>
+    </div>
+</div>
+
+
+
 let refreshInterval;
 const refreshRate = 5000; // 5 seconds
 
@@ -7037,6 +7057,7 @@ namespace Singleton_Pattern
         }
     }
 }
+
 
 
 
