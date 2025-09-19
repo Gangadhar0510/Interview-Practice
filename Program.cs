@@ -1,3 +1,60 @@
+let refreshInterval;
+const refreshRate = 5000; // 5 seconds
+
+function LoadManualBatchHistoryData() {
+    $.ajax({
+        url: '/Home/GetManualAndBatchAuthorizationHistory',
+        type: 'GET',
+        success: function(data) {
+            $("#manualBatchHistory").html(data);
+            updateRefreshTimeAndTable();
+        },
+        error: function() {
+            $("#manualBatchHistory").html("<p class='text-danger'>Failed to load data.</p>");
+        }
+    });
+}
+
+// Start auto-refresh only when tab is visible
+function startAutoRefresh() {
+    // Do an immediate load first
+    LoadManualBatchHistoryData();
+
+    // Clear any existing interval
+    if (refreshInterval) clearInterval(refreshInterval);
+
+    // Set new interval
+    refreshInterval = setInterval(LoadManualBatchHistoryData, refreshRate);
+}
+
+// Stop auto-refresh when tab is hidden
+function stopAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+    }
+}
+
+// Listen for visibility changes
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === 'visible') {
+        startAutoRefresh();
+    } else {
+        stopAutoRefresh();
+    }
+});
+
+// Initial load if page is visible on load
+if (document.visibilityState === 'visible') {
+    startAutoRefresh();
+}
+
+// Optional: bind refresh button
+document.getElementById("refreshTableBtn").addEventListener("click", LoadManualBatchHistoryData);
+
+
+
+
 
 <div class="d-flex align-items-center mb-3">
     <!-- Refresh Button -->
@@ -6980,6 +7037,7 @@ namespace Singleton_Pattern
         }
     }
 }
+
 
 
 
