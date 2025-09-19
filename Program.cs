@@ -1,3 +1,97 @@
+<!-- Idle Timeout Modal -->
+<div class="modal fade" id="idleModal" tabindex="-1" aria-labelledby="idleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="idleModalLabel">Session Idle</h5>
+      </div>
+      <div class="modal-body">
+        You have been idle for 45 minutes. Please refresh the page to continue auto-refresh.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="refreshPageBtn">Refresh Page</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+let refreshInterval;
+const refreshRate = 5000; // 5 seconds
+let idleTimeout;
+const idleLimit = 45 * 60 * 1000; // 45 minutes
+
+function LoadManualBatchHistoryData() {
+    $.ajax({
+        url: '/Home/GetManualAndBatchAuthorizationHistory',
+        type: 'GET',
+        success: function(data) {
+            $("#manualBatchHistory").html(data);
+            updateRefreshTimeAndTable();
+        },
+        error: function() {
+            $("#manualBatchHistory").html("<p class='text-danger'>Failed to load data.</p>");
+        }
+    });
+}
+
+function startAutoRefresh() {
+    LoadManualBatchHistoryData();
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(LoadManualBatchHistoryData, refreshRate);
+}
+
+function stopAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+    }
+}
+
+// Idle detection
+function resetIdleTimer() {
+    if (idleTimeout) clearTimeout(idleTimeout);
+    idleTimeout = setTimeout(() => {
+        stopAutoRefresh();
+        // Show Bootstrap modal
+        const idleModal = new bootstrap.Modal(document.getElementById('idleModal'));
+        idleModal.show();
+    }, idleLimit);
+}
+
+// Listen for user activity
+['mousemove', 'keydown', 'scroll', 'click'].forEach(event => {
+    document.addEventListener(event, resetIdleTimer, false);
+});
+
+// Visibility change
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === 'visible') {
+        startAutoRefresh();
+        resetIdleTimer();
+    } else {
+        stopAutoRefresh();
+    }
+});
+
+// Initial load
+if (document.visibilityState === 'visible') {
+    startAutoRefresh();
+    resetIdleTimer();
+}
+
+// Refresh button
+document.getElementById("refreshTableBtn").addEventListener("click", LoadManualBatchHistoryData);
+
+// Modal refresh button
+document.getElementById("refreshPageBtn").addEventListener("click", function() {
+    location.reload(); // reloads the page and restarts auto-refresh
+});
+
+
+
+
 let refreshIntervalDashboard = null;
 const refreshRateDashboard = 60000; // 1 min
 const HEARTBEAT_KEY = "lastActiveTime";
@@ -7208,6 +7302,7 @@ namespace Singleton_Pattern
         }
     }
 }
+
 
 
 
