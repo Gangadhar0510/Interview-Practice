@@ -1,3 +1,59 @@
+let refreshInterval = null;
+let idleTimer = null;
+let idleTimeout = 60000; // 1 minute idle = stop refresh
+
+function refreshDashboard() {
+    console.log("Refreshing dashboard...");
+    // Your refresh logic here
+    // LoadManualBatchHistoryData();
+}
+
+function startAutoRefresh() {
+    if (!refreshInterval) {
+        refreshInterval = setInterval(refreshDashboard, 5000);
+        console.log("Auto-refresh started");
+    }
+}
+
+function stopAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+        console.log("Auto-refresh stopped");
+    }
+}
+
+function resetIdleTimer() {
+    // User is active
+    if (idleTimer) clearTimeout(idleTimer);
+
+    // Restart auto-refresh if visible
+    if (!document.hidden) {
+        startAutoRefresh();
+    }
+
+    // Set idle timeout → stop refresh after X minutes inactivity
+    idleTimer = setTimeout(() => {
+        stopAutoRefresh();
+    }, idleTimeout);
+}
+
+// Page Visibility API (works when switching browser tabs)
+document.addEventListener("visibilitychange", function () {
+    if (document.hidden) {
+        stopAutoRefresh();
+    } else {
+        resetIdleTimer(); // restart with idle check
+    }
+});
+
+// Track user activity (covers VDI minimize/return cases)
+["mousemove", "keydown", "mousedown", "touchstart"].forEach(event => {
+    document.addEventListener(event, resetIdleTimer);
+});
+
+// Start on page load
+resetIdleTimer();
 
 <div class="card-tools d-flex align-items-center">
     <!-- Refresh Button -->
@@ -7057,6 +7113,7 @@ namespace Singleton_Pattern
         }
     }
 }
+
 
 
 
