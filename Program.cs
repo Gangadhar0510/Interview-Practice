@@ -1,3 +1,98 @@
+let refreshIntervalDashboard = null;
+const refreshRateDashboard = 60000; // 1 min
+const HEARTBEAT_KEY = "lastActiveTime";
+const IDLE_LIMIT = 2 * refreshRateDashboard; // e.g. 2 minutes gap means VDI/RDP was closed
+
+function updateRefreshTimeAndDashboard() {
+    const now = new Date();
+    const formatted = now.toLocaleString('en-US', {
+        month: 'short', day: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    document.getElementById("lastRefreshTime").textContent = formatted;
+}
+
+function LoadExportDashboardData() {
+    $.ajax({
+        url: '/Home/GetAuthorizationExportDashboardData',
+        type: 'GET',
+        success: function (data) {
+            if (data.success) {
+                // update UI here
+                updateRefreshTimeAndDashboard();
+            }
+        }
+    });
+}
+
+// ------------------ AUTO REFRESH ------------------
+
+function startAutoRefreshDashboard() {
+    console.log("Starting auto-refresh");
+
+    // Do an immediate load
+    LoadExportDashboardData();
+
+    // Clear any existing interval
+    if (refreshIntervalDashboard) clearInterval(refreshIntervalDashboard);
+
+    // Start new interval
+    refreshIntervalDashboard = setInterval(LoadExportDashboardData, refreshRateDashboard);
+}
+
+function stopAutoRefreshDashboard() {
+    console.log("Stopping auto-refresh");
+    if (refreshIntervalDashboard) {
+        clearInterval(refreshIntervalDashboard);
+        refreshIntervalDashboard = null;
+    }
+}
+
+// ------------------ HEARTBEAT ------------------
+
+function heartbeat() {
+    localStorage.setItem(HEARTBEAT_KEY, Date.now());
+}
+setInterval(heartbeat, 10000); // update every 10s
+heartbeat();
+
+// ------------------ RESUME HANDLING ------------------
+
+function checkResume() {
+    const lastActive = parseInt(localStorage.getItem(HEARTBEAT_KEY) || "0", 10);
+    const now = Date.now();
+
+    if (now - lastActive > IDLE_LIMIT) {
+        console.log("Detected VDI/RDP disconnect → restarting refresh");
+        stopAutoRefreshDashboard();
+        startAutoRefreshDashboard();
+    }
+}
+
+// ------------------ EVENT BINDINGS ------------------
+
+// When tab becomes visible again
+document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === 'visible') {
+        checkResume();
+    } else {
+        stopAutoRefreshDashboard();
+    }
+});
+
+// When window regains focus (e.g., after reconnecting VDI)
+window.addEventListener("focus", checkResume);
+
+// Manual refresh button
+document.getElementById("refreshBtn").addEventListener("click", LoadExportDashboardData);
+
+// Initial load if visible
+if (document.visibilityState === 'visible') {
+    startAutoRefreshDashboard();
+}
+
+
+
 let refreshInterval = null;
 let idleTimer = null;
 let idleTimeout = 60000; // 1 minute idle = stop refresh
@@ -7113,6 +7208,7 @@ namespace Singleton_Pattern
         }
     }
 }
+
 
 
 
