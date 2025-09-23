@@ -1,3 +1,32 @@
+public AuthorizationCountAverageModel GetAuthorizationCount()
+{
+    var result = new AuthorizationCountAverageModel();
+
+    using var connection = _exportsUnitOfWork.Context.Database.GetDbConnection();
+    connection.Open();
+
+    using var command = connection.CreateCommand();
+    command.CommandText = "[Canonical].[EEMP020_GET_ExportsCountAndAVGInformation]";
+    command.CommandType = System.Data.CommandType.StoredProcedure;
+
+    using var reader = command.ExecuteReader();
+    if (reader.Read())
+    {
+        result.RealtimeExportsToday = (int)reader["RealtimeExportsToday"];
+        result.DailyAvgRealtimeExportsOver30Days = (int)reader["DailyAvgRealtimeExportsOver30Days"];
+        result.SuccessfulExportsToday = (int)reader["SuccessfulExportsToday"];
+        result.DailyAvgSuccessfulExportsOver30Days = (int)reader["DailyAvgSuccessfulExportsOver30Days"];
+        result.PendingExportsToday = (int)reader["PendingExportsToday"];
+        result.DailyAvgPendingExportsOver30Days = (int)reader["DailyAvgPendingExportsOver30Days"];
+        result.ItemsInQueueToday = (int)reader["ItemsInQueueToday"];
+        result.DailyAvgItemsInQueueOver30Days = (int)reader["DailyAvgItemsInQueueOver30Days"];
+    }
+
+    return result;
+}
+
+
+
 <!-- Idle Timeout Modal -->
 <div class="modal fade" id="idleModal" tabindex="-1" aria-labelledby="idleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -7302,6 +7331,7 @@ namespace Singleton_Pattern
         }
     }
 }
+
 
 
 
