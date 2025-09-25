@@ -1,3 +1,87 @@
+// ==================== Batch History (HTML) ====================
+let batchLoading = false;
+let batchRefreshRate = 60000; // 1 min
+let batchTimeout;
+
+function LoadManualBatchHistoryData() {
+    if (batchLoading) return;
+    batchLoading = true;
+
+    $.ajax({
+        url: '/Home/GetManualAndBatchAuthorizationHistory',
+        type: 'GET',
+        success: function(data) {
+            $("#manualBatchHistory").html(data);
+            updateRefreshTimeAndTable();
+        },
+        error: function() {
+            $("#manualBatchHistory").html("<p class='text-danger'>Failed to load data.</p>");
+        },
+        complete: function() {
+            batchLoading = false;
+            batchTimeout = setTimeout(() => {
+                if (document.visibilityState === 'visible') {
+                    LoadManualBatchHistoryData();
+                }
+            }, batchRefreshRate);
+        }
+    });
+}
+
+// ==================== Dashboard (JSON) ====================
+let dashboardLoading = false;
+let dashboardRefreshRate = 5000; // 5 sec
+let dashboardTimeout;
+
+function LoadExportDashboardData() {
+    if (dashboardLoading) return;
+    dashboardLoading = true;
+
+    $.ajax({
+        url: '/Home/GetAuthorizationExportDashboardData',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            if (data.success) {
+                updateRefreshTimeAndDashboard(data);
+            }
+        },
+        error: function() {
+            console.error("Failed to load dashboard data");
+        },
+        complete: function() {
+            dashboardLoading = false;
+            dashboardTimeout = setTimeout(() => {
+                if (document.visibilityState === 'visible') {
+                    LoadExportDashboardData();
+                }
+            }, dashboardRefreshRate);
+        }
+    });
+}
+
+// ==================== Visibility Handling ====================
+function handleVisibilityChange() {
+    if (document.visibilityState === 'visible') {
+        LoadManualBatchHistoryData();
+        LoadExportDashboardData();
+    } else {
+        clearTimeout(batchTimeout);
+        clearTimeout(dashboardTimeout);
+    }
+}
+
+document.addEventListener("visibilitychange", handleVisibilityChange);
+
+// Optional: bind refresh button
+document.getElementById("refreshTableBtn")?.addEventListener("click", LoadManualBatchHistoryData);
+
+// Initial load
+LoadManualBatchHistoryData();
+LoadExportDashboardData();
+
+
+
 public AuthorizationCountAverageModel GetAuthorizationCount()
 {
     var result = new AuthorizationCountAverageModel();
@@ -7331,6 +7415,7 @@ namespace Singleton_Pattern
         }
     }
 }
+
 
 
 
